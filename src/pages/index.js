@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import DVDBouncer from '../comp/DVDBouncer';
+
 
 const App = () => {
 
@@ -20,6 +22,13 @@ const App = () => {
   const [paddleHeight] = useState(10);
 
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
+
+  //Victor bouncer
+  const [showDVDBouncer, setShowDVDBouncer] = useState(false);
+
+  useEffect(() => {
+    setShowDVDBouncer(score >= 2);
+  }, [score]);
 
 
   useEffect(() => {
@@ -160,6 +169,21 @@ const App = () => {
       
       <div className="game-container" style={{ width: gameWidth, height: gameHeight,}}>
         <div className="background-game" style={{width: gameWidth, height: gameHeight,}}></div>
+
+        {showDVDBouncer && (
+          <div style={{ 
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            width: '100%', 
+            height: '100%', 
+            zIndex: 5,
+            pointerEvents: 'none' // Pour que les clics passent à travers
+          }}>
+            <DVDBouncer containerWidth={gameWidth} containerHeight={gameHeight} />
+          </div>
+        )}
+
         <div className="scoreboard">
           <h2>Score: {score}</h2>
         </div>
@@ -205,6 +229,7 @@ const App = () => {
           <button className='boutton'>Aller à la page test</button>
         </Link>
       </div>
+
       <div className="outside-game">
       </div>
     </div>
