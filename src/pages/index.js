@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 
 const App = () => {
 
@@ -156,6 +157,7 @@ const App = () => {
 
   return (
     <div className='ok'>
+      
       <div className="game-container" style={{ width: gameWidth, height: gameHeight,}}>
         <div className="background-game" style={{width: gameWidth, height: gameHeight,}}></div>
         <div className="scoreboard">
@@ -198,7 +200,11 @@ const App = () => {
       <div className="rainbow-text">
         WOOOO LE GAMING
       </div>
-
+      <div className="button-container">
+        <Link to="/test">
+          <button className='boutton'>Aller à la page test</button>
+        </Link>
+      </div>
       <div className="outside-game">
       </div>
     </div>
