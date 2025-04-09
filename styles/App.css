@@ -1,0 +1,128 @@
+html {
+  background-image: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);
+  background-size: 300% 100%;
+  color: transparent;
+  background-clip: text;
+  animation: rainbow-animation 0.6s ease infinite;
+  -webkit-background-clip: text;
+}
+
+.ok {
+  background-image: url('https://media.licdn.com/dms/image/v2/D4D03AQFiK4yzH4s1Zg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1713801112916?e=2147483647&v=beta&t=UXyPTHZ0tz0tWynIF7smhJmC7FvJdXWPzDVXtCk9QQY');
+  background-size: 'cover';
+  background-position: 'center';
+}
+
+.game-container {
+  position: relative;
+  background-color: #000;
+  margin: auto;
+  overflow: hidden;
+}
+
+.background-game {
+  background-image: url('https://www.herault-tribune.com/wp-content/uploads/2021/06/CGI-castlenau-le-lez-2-1024x600.jpg');
+  background-size: 'cover';
+  background-position: 'center';
+  opacity: 0.6
+}
+
+.ball {
+  position: absolute;
+  background-color: red;
+  border-radius: 50%;
+}
+
+.paddle {
+  position: absolute;
+  background-color: #4CAF50;
+  bottom: 0;
+  border-radius: 5px;
+}
+
+.scoreboard {
+  position: absolute;
+  top: 5vh;
+  left: 5vw;
+  color: rgb(0, 0, 0);
+  font-size: 2vw;
+  text-shadow:
+    1px 1px 0px rgb(255, 0, 0),
+    -1px -1px 0px rgb(255, 0, 0),
+    1px -1px 0px rgb(255, 0, 0),
+    -1px 1px 0px rgb(255, 0, 0);
+}
+
+.leaderboard {
+  position: absolute;
+  top: 5vh;
+  right: 5vw;
+  color: rgb(0, 0, 0);
+  font-size: 2vw;
+  text-shadow:
+    1px 1px 0px rgb(255, 0, 0),
+    -1px -1px 0px rgb(255, 0, 0),
+    1px -1px 0px rgb(255, 0, 0),
+    -1px 1px 0px rgb(255, 0, 0);
+}
+
+.leaderboard ul {
+  padding: 0;
+  list-style-type: none;
+}
+
+@media (max-width: 600px) {
+
+  .scoreboard,
+  .leaderboard {
+    font-size: 4vw;
+  }
+
+  .ball {
+    width: 10vw;
+    height: 10vw;
+  }
+
+  .paddle {
+    height: 5vh;
+  }
+}
+
+.rainbow-text {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: bold;
+  margin-top: 20px;
+  background-image: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);
+  background-size: 300% 100%;
+  color: transparent;
+  background-clip: text;
+  animation: rainbow-animation 0.6s ease infinite;
+  -webkit-background-clip: text;
+}
+
+@keyframes rainbow-animation {
+  0% {
+    background-position: 100% 0%;
+  }
+
+  50% {
+    background-position: 0% 0%;
+  }
+
+  100% {
+    background-position: 100% 0%;
+  }
+}
+
+.outside-game {
+  width: 100%;
+  height: 20vh;
+  background-image: url('https://media.licdn.com/dms/image/v2/D4E16AQFdJHzEwiF5-w/profile-displaybackgroundimage-shrink_200_800/profile-displaybackgroundimage-shrink_200_800/0/1696156261233?e=2147483647&v=beta&t=rIIGtLL8BGn40f6DPIYyiqoY1XS_CtjoitDRWg9xXGA');
+  background-size: cover;
+  background-position: center;
+  text-align: center;
+  color: white;
+  padding: 20px;
+  box-sizing: border-box;
+}
