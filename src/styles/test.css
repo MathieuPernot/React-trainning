@@ -1,16 +1,132 @@
-body {
-    color: rgb(5, 0, 20);
-  }
-
-.testpage{
-    color: cadetblue;
+.profile-container {
+  font-family: 'Arial', sans-serif;
+  background-color: #22000b;
+  color: #ff3794;
+  text-align: center;
+  padding: 20px;
 }
 
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;  /* Permet de prendre toute la hauteur de la page */
-    width: 100%;   /* Permet de prendre toute la largeur de la page */
-  }
-  
+
+.profile-header {
+  background-color: #62006e;
+  color: #ff3794;
+  padding: 20px;
+}
+
+.profile-header h1 {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.profile-header .profile-tagline {
+  font-size: 18px;
+  font-style: italic;
+}
+
+
+.profile-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #62006e;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+.profile-image img {
+  border-radius: 50%;
+  width: 150px;
+  height: 150px;
+}
+
+.profile-details {
+  margin-left: 20px;
+  text-align: left;
+}
+
+.profile-details h2 {
+  font-size: 28px;
+  color: #62006e;
+}
+
+.profile-details p {
+  font-size: 16px;
+  color: #ff3794;
+}
+
+.social-links {
+  margin-top: 10px;
+}
+
+.social-links a {
+  color: #62006e;
+  margin-right: 15px;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.social-links a:hover {
+  text-decoration: underline;
+}
+
+.popupbouton {
+  background: none;
+  border: none;
+  color: #62006e;
+  font-size: 16px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.popupbouton:hover {
+  text-decoration: underline;
+  color: darkblue;
+}
+
+.recent-articles {
+  margin-top: 40px;
+}
+
+.recent-articles h3 {
+  font-size: 24px;
+  color: #62006e;
+}
+
+.article-preview {
+  background-color: white;
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.article-preview h4 {
+  color: #62006e;
+}
+
+.article-preview a {
+  color: #62006e;
+  text-decoration: none;
+}
+
+.article-preview a:hover {
+  text-decoration: underline;
+}
+
+
+.profile-footer {
+  background-color: #62006e;
+  padding: 10px;
+  color: white;
+  font-size: 14px;
+  margin-top: 40px;
+}
+
+.firstpopup{
+  background-color: #62006e;
+  padding: 10px;
+  color: white;
+  font-size: 14px;
+  margin-top: 40px;
+}
