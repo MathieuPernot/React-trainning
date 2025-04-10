@@ -18,6 +18,11 @@ const App = () => {
   const [paddleHeight] = useState(10);
 
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
+  
+  // État pour l'image à afficher
+  const [currentImage, setCurrentImage] = useState(null);
+  // État pour gérer l'affichage de l'image
+  const [showImage, setShowImage] = useState(false);
 
   // Modification ici : on garde un tableau de bouncers plutôt qu'un seul booléen
   const [dvdBouncers, setDvdBouncers] = useState([]);
@@ -40,6 +45,38 @@ const App = () => {
       setDvdBouncers(newBouncers);
     }
   }, [score, dvdBouncers]);
+
+  // Effet pour surveiller le score et afficher l'image correspondante
+  useEffect(() => {
+    // Définir quelle image afficher selon le score
+    if (score === 5) {
+      setCurrentImage("/image00001.jpeg");
+      setShowImage(true);
+    } else if (score === 10) {
+      setCurrentImage("/image00002.jpeg");
+      setShowImage(true);
+    } else if (score === 20) {
+      setCurrentImage("/image00003.jpeg");
+      setShowImage(true);
+    } else {
+      // Si on affiche déjà une image, mais que le score n'est plus un score milestone
+      // Ne pas exécuter ceci si showImage est déjà false pour éviter des re-renders inutiles
+      if (showImage) {
+        setShowImage(false);
+      }
+      return;
+    }
+    
+    // Masquer l'image après 0,5 secondes si elle est affichée
+    if (showImage) {
+      const timer = setTimeout(() => {
+        setShowImage(false);
+      }, 500);
+      
+      // Nettoyer le timer si le composant est démonté ou si le score change
+      return () => clearTimeout(timer);
+    }
+  }, [score, showImage]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -161,7 +198,7 @@ const App = () => {
   return (
     <div className='ok'>
       
-      <div className="game-container" style={{ width: gameWidth, height: gameHeight }}>
+      <div className="game-container" style={{ width: gameWidth, height: gameHeight, position: 'relative' }}>
         <div className="background-game" style={{ width: gameWidth, height: gameHeight }}></div>
 
         {/* Afficher tous les DVD bouncers du tableau */}
@@ -181,13 +218,32 @@ const App = () => {
             <DVDBouncer 
               containerWidth={gameWidth} 
               containerHeight={gameHeight} 
-              // On peut ajouter des propriétés différentes pour chaque bouncer si souhaité
-              // Par exemple, différentes vitesses ou tailles
               initialX={Math.random() * gameWidth} 
               initialY={Math.random() * gameHeight}
             />
           </div>
         ))}
+
+        {/* Affichage de l'image conditionnellement */}
+        {showImage && currentImage && (
+          <div 
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 10, // Valeur élevée pour être au-dessus de tous les autres éléments
+              width: '150px', // Ajustez selon vos besoins
+              height: '150px', // Ajustez selon vos besoins
+            }}
+          >
+            <img 
+              src={currentImage} 
+              alt="Milestone achievement" 
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          </div>
+        )}
 
         <div className="scoreboard">
           <h2>Score: {score}</h2>
