@@ -92,6 +92,20 @@
   gap: 12px;
 }
 
+.container2 {
+  display: flex;
+  justify-content: center;  /* Centre les éléments horizontalement */
+  align-items: center;      /* Centre les éléments verticalement */
+}
+
+.item-left {
+  margin-left: 0; /* Le premier élément reste à gauche */
+}
+
+.item-center {
+  margin-left: auto; /* Le deuxième élément se pousse à droite automatiquement, créant l'espacement */
+  margin-right: auto; /* Centrer l'élément au milieu */
+}
 
 .music-item a:hover {
   color: #0077ff;

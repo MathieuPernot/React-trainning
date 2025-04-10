@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import Popup from './Popup';
+import { Link } from 'react-router-dom';
+
 
 const TestPage = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -8,8 +10,18 @@ const TestPage = () => {
   return (
     <div className="profile-container">
       <header className="profile-header">
-        <h1>Bienvenue sur le Profil de Xx_TomBartix_xX</h1>
-        <p className="profile-tagline">"Je suis le plus cool des cools"</p>
+        <div className="container2">
+          <div className="item-left"><div className="button-container">
+                <Link to="/">
+                  <button className='boutton'>Retour</button>
+                </Link>
+              </div>
+            </div>
+            <div className="item-center">
+              <h1>Bienvenue sur le Profil de Xx_TomBartix_xX</h1>
+            <p className="profile-tagline">"Je suis le plus cool des cools"</p>
+            </div>
+          </div>
       </header>
 
       <section className="profile-info">
