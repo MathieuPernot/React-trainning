@@ -63,42 +63,52 @@ const TestPage = () => {
         ]
     };
 
-const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
+    const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
 
     return (
         <div className="calendar">
-          <h1 className="titre2">📅 Calendrier des Food Trucks</h1>
-          <table>
-            <thead>
-              <tr>
-                {jours.map((jour) => (
-                  <th className= "jours" key={jour}>{jour}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {[0, 1].map((index) => ( // Deux foodtrucks par jour
-                <tr key={index}>
-                  {jours.map((jour) => {
-                    const truck = foodTruckSchedule[jour][index];
-                    return (
-                      <td className= "case" key={`${jour}-${index}`}>
-                        {truck ? (
-                          <div className="truck">
-                            <img src={truck.image} alt={truck.name} className="truck-image" />
-                            <h3>{truck.name}</h3>
-                            <p>{truck.description}</p>
-                          </div>
-                        ) : (
-                          <em>Pas de food truck</em>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            <div className="container2">
+                <div className="item-left"><div className="button-container">
+                    <Link to="/">
+                        <button className='boutton'>Retour</button>
+                    </Link>
+                </div>
+                </div>
+                <div className="item-center">
+                    <h1 className="titre2">📅 Calendrier des Food Trucks</h1>
+                </div>
+            </div>
+            <table className="table">
+                <thead>
+                    <tr>
+                        {jours.map((jour) => (
+                            <th className="jours" key={jour}>{jour}</th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {[0, 1].map((index) => ( // Deux foodtrucks par jour
+                        <tr key={index}>
+                            {jours.map((jour) => {
+                                const truck = foodTruckSchedule[jour][index];
+                                return (
+                                    <td className="case" key={`${jour}-${index}`}>
+                                        {truck ? (
+                                            <div className="truck">
+                                                <img src={truck.image} alt={truck.name} className="truck-image" />
+                                                <h3>{truck.name}</h3>
+                                                <p>{truck.description}</p>
+                                            </div>
+                                        ) : (
+                                            <em>Pas de food truck</em>
+                                        )}
+                                    </td>
+                                );
+                            })}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };
