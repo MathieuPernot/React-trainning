@@ -94,12 +94,13 @@
 
 .container2 {
   display: flex;
-  justify-content: center;  /* Centre les éléments horizontalement */
-  align-items: center;      /* Centre les éléments verticalement */
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 5px;
 }
 
 .item-left {
-  margin-left: 0; /* Le premier élément reste à gauche */
+  margin-left: 0;
 }
 
 .item {
@@ -110,8 +111,8 @@
 }
 
 .item-center {
-  margin-left: auto; /* Le deuxième élément se pousse à droite automatiquement, créant l'espacement */
-  margin-right: auto; /* Centrer l'élément au milieu */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .music-item a:hover {
@@ -184,7 +185,7 @@
   margin-top: 40px;
 }
 
-.firstpopup{
+.firstpopup {
   background-color: #62006e;
   padding: 10px;
   color: white;
