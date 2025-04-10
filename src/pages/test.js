@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Popup from './popup';
+import Popup from './Popup';
 
 const TestPage = () => {
   const [showPopup, setShowPopup] = useState(false);
