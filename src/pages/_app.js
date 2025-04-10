@@ -1,7 +1,7 @@
 import '../styles/App.css';
 import '../styles/test.css';
 import '../styles/globals.css';
-import '../styles/Popup.css'; 
+import { Analytics } from "@vercel/analytics/react"
 
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -22,12 +22,15 @@ function MyApp() {
   }
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/test" element={<About />} />
-      </Routes>
-    </Router>
+    <>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/test" element={<About />} />
+        </Routes>
+      </Router>
+      <Analytics />
+    </>
   );
 }
 
