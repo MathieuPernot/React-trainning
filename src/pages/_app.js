@@ -11,11 +11,11 @@ function MyApp() {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true); // Le code ne s'exécute qu'après le premier rendu côté client
+    setIsClient(true); 
   }, []);
 
   if (!isClient) {
-    return null; // Vous pouvez aussi afficher un indicateur de chargement ici
+    return null; 
   }
 
   return (
