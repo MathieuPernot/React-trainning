@@ -1,0 +1,42 @@
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+
+.gabe {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    background-image: url('https://th.bing.com/th/id/R.1ab90de949858b0580d9a8b0ea0598f6?rik=0O3zeo8bfeSKgg&riu=http%3a%2f%2fgetwallpapers.com%2fwallpaper%2ffull%2f7%2f0%2ff%2f181441.jpg&ehk=F3LkzCOvLvmnZs46EOucond9aTCw7suSCOlqX85KcEg%3d&risl=&pid=ImgRaw&r=0');
+}
+
+
+@keyframes tomber {
+    0% {
+        top: -50px;
+        opacity: 1;
+    }
+
+    100% {
+        top: 100vh;
+        opacity: 0;
+    }
+}
+
+
+.image-falling {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-size: cover;
+    opacity: 1;
+    animation: tomber linear forwards;
+}

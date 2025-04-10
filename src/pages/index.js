@@ -19,24 +19,24 @@ const App = () => {
 
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
 
-  // Modification ici : on garde un tableau de bouncers plutôt qu'un seul booléen
+
   const [dvdBouncers, setDvdBouncers] = useState([]);
-  
-  // Modification : mise à jour pour ajouter un nouveau bouncer tous les 2 points
+
+
   useEffect(() => {
-    // Calculer combien de bouncers devraient être affichés
+
     const bouncersCount = Math.floor(score / 2);
-    
-    // Si nous avons besoin d'ajouter de nouveaux bouncers
+
+
     if (bouncersCount > dvdBouncers.length) {
-      // Créer un tableau de nouveaux bouncers
+
       const newBouncers = [...dvdBouncers];
-      
-      // Ajouter les bouncers manquants
+
+
       for (let i = dvdBouncers.length; i < bouncersCount; i++) {
-        newBouncers.push({ id: i });  // Ajouter un ID unique pour chaque bouncer
+        newBouncers.push({ id: i });
       }
-      
+
       setDvdBouncers(newBouncers);
     }
   }, [score, dvdBouncers]);
@@ -124,7 +124,7 @@ const App = () => {
         setLeaderboard(newLeaderboard);
         setScore(0);
         setSpeedMultiplier(1);
-        // Réinitialiser les bouncers quand le joueur perd
+
         setDvdBouncers([]);
         return randomBallStart();
       }
@@ -160,30 +160,30 @@ const App = () => {
 
   return (
     <div className='ok'>
-      
+
       <div className="game-container" style={{ width: gameWidth, height: gameHeight }}>
         <div className="background-game" style={{ width: gameWidth, height: gameHeight }}></div>
 
-        {/* Afficher tous les DVD bouncers du tableau */}
+        { }
         {dvdBouncers.map((bouncer) => (
-          <div 
+          <div
             key={bouncer.id}
-            style={{ 
-              position: 'absolute', 
-              top: 0, 
-              left: 0, 
-              width: '100%', 
-              height: '100%', 
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
               zIndex: 5,
-              pointerEvents: 'none' // Pour que les clics passent à travers
+              pointerEvents: 'none'
             }}
           >
-            <DVDBouncer 
-              containerWidth={gameWidth} 
-              containerHeight={gameHeight} 
-              // On peut ajouter des propriétés différentes pour chaque bouncer si souhaité
-              // Par exemple, différentes vitesses ou tailles
-              initialX={Math.random() * gameWidth} 
+            <DVDBouncer
+              containerWidth={gameWidth}
+              containerHeight={gameHeight}
+
+
+              initialX={Math.random() * gameWidth}
               initialY={Math.random() * gameHeight}
             />
           </div>
@@ -200,7 +200,7 @@ const App = () => {
             width: ballSize,
             height: ballSize,
             position: 'absolute',
-            
+
             backgroundImage: 'url(https://media.licdn.com/dms/image/v2/D4D03AQEaWWajd253rw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1704901487990?e=2147483647&v=beta&t=72OChZdJEe8-s3Lywwdhd_8HTwB2V8ralZ0ZDOnZIFM)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -242,6 +242,12 @@ const App = () => {
         </div>
       </div>
       <div className="outside-game">
+        <Link to="/gaben">
+          <button
+            className="fixed-button"
+          > ?????
+          </button>
+        </Link>
       </div>
     </div>
   );
