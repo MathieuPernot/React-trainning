@@ -1,4 +1,3 @@
-/* Conteneur général de la page */
 .profile-container {
   font-family: 'Arial', sans-serif;
   background-color: #22000b;
@@ -7,7 +6,7 @@
   padding: 20px;
 }
 
-/* En-tête de la page */
+
 .profile-header {
   background-color: #62006e;
   color: #ff3794;
@@ -24,7 +23,7 @@
   font-style: italic;
 }
 
-/* Informations du profil */
+
 .profile-info {
   display: flex;
   justify-content: center;
@@ -71,7 +70,20 @@
   text-decoration: underline;
 }
 
-/* Section des articles récents */
+.popupbouton {
+  background: none;
+  border: none;
+  color: #62006e;
+  font-size: 16px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.popupbouton:hover {
+  text-decoration: underline;
+  color: darkblue;
+}
+
 .recent-articles {
   margin-top: 40px;
 }
@@ -102,8 +114,16 @@
   text-decoration: underline;
 }
 
-/* Footer */
+
 .profile-footer {
+  background-color: #62006e;
+  padding: 10px;
+  color: white;
+  font-size: 14px;
+  margin-top: 40px;
+}
+
+.firstpopup{
   background-color: #62006e;
   padding: 10px;
   color: white;
