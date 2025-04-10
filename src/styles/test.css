@@ -102,6 +102,13 @@
   margin-left: 0; /* Le premier élément reste à gauche */
 }
 
+.item {
+  margin: 10px;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+}
+
 .item-center {
   margin-left: auto; /* Le deuxième élément se pousse à droite automatiquement, créant l'espacement */
   margin-right: auto; /* Centrer l'élément au milieu */

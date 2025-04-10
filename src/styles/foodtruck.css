@@ -1,0 +1,72 @@
+.titre {
+    color: aliceblue;
+}
+.calendar {
+  font-family: sans-serif;
+  padding: 20px;
+  max-width: 1000px;
+  margin: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 15px;
+  vertical-align: top;
+  text-align: center;
+}
+
+th {
+  background-color: #f4f4f4;
+}
+
+.case{
+    background-color: grey;
+}
+.truck-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+h3 {
+  margin: 5px 0;
+  font-size: 16px;
+}
+
+p {
+  font-size: 14px;
+  color: aliceblue;
+}
+
+.jours{
+    background-image: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);
+    background-size: 300% 100%;
+    color: transparent;
+    background-clip: text;
+    animation: rainbow-animation 0.6s ease infinite;
+    -webkit-background-clip: text;
+  }
+  
+  @keyframes rainbow-animation {
+    0% {
+      background-position: 100% 0%;
+    }
+  
+    50% {
+      background-position: 0% 0%;
+    }
+  
+    100% {
+      background-position: 100% 0%;
+    }
+  }
+.titre2{
+    color: aliceblue;
+}
