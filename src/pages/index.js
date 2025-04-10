@@ -231,7 +231,7 @@ const App = () => {
       </div>
       <div className="button-container">
         <Link to="/test">
-          <button className='boutton'>Aller à la page test</button>
+          <button className='boutton'>Aller à la page de Tom</button>
         </Link>
       </div>
 
