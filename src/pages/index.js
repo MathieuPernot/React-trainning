@@ -229,12 +229,18 @@ const App = () => {
       <div className="rainbow-text">
         WOOOO LE GAMING
       </div>
-      <div className="button-container">
-        <Link to="/test">
-          <button className='boutton'>Aller à la page de Tom</button>
-        </Link>
+      <div className="container2">
+        <div className="button-container">
+          <Link to="/test">
+            <button className='boutton'>Aller à la page de Tom</button>
+          </Link>
+        </div>
+        <div className="button-container">
+          <Link to="/foodtrucks">
+            <button className='boutton'>foodtrucks</button>
+          </Link>
+        </div>
       </div>
-
       <div className="outside-game">
       </div>
     </div>

@@ -50,9 +50,9 @@ const TestPage = () => {
         <div className="article-preview">
           <h4>Ma playlist du mois</h4>
           <p>Voici mes morceaux préférés de ce mois-ci, à découvrir absolument !</p>
-          <button className = 'popup' onClick={() => setShowPopup2(true)}>Lire plus...</button>
+          <button className = 'popupbouton' onClick={() => setShowPopup(true)}>Lire plus...</button>
 
-          <Popup show={showPopup2} onClose={() => setShowPopup2(false)}>
+          <Popup show={showPopup} onClose={() => setShowPopup(false)}>
             <div className="secondpopup">
               <h2>🎵 Liste de musiques</h2>
 
