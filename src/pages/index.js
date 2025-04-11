@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import DVDBouncer from '../comp/DVDBouncer';
 
 const App = () => {
   const ballRef = useRef(null);
@@ -19,7 +20,77 @@ const App = () => {
   const [isTouching, setIsTouching] = useState(false);
   const [isBallInitialized, setIsBallInitialized] = useState(false);
 
+  
+
   // Resize handler to adjust the game size
+  const [speedMultiplier, setSpeedMultiplier] = useState(1);
+  
+  // État pour l'image à afficher
+  const [currentImage, setCurrentImage] = useState(null);
+  // État pour gérer l'affichage de l'image
+  const [showImage, setShowImage] = useState(false);
+
+  // Modification ici : on garde un tableau de bouncers plutôt qu'un seul booléen
+  const [dvdBouncers, setDvdBouncers] = useState([]);
+
+
+  useEffect(() => {
+
+    const bouncersCount = Math.floor(score / 2);
+
+
+    if (bouncersCount > dvdBouncers.length) {
+
+      const newBouncers = [...dvdBouncers];
+
+
+      for (let i = dvdBouncers.length; i < bouncersCount; i++) {
+        newBouncers.push({ id: i });
+      }
+
+      setDvdBouncers(newBouncers);
+    }
+  }, [score, dvdBouncers]);
+
+  // Effet pour surveiller le score et afficher l'image correspondante
+  useEffect(() => {
+    // Définir quelle image afficher selon le score
+    if (score === 5) {
+      setCurrentImage("/image00001.jpeg");
+      setShowImage(true);
+    } else if (score === 10) {
+      setCurrentImage("/image00002.jpeg");
+      setShowImage(true);
+    } else if (score === 20) {
+      setCurrentImage("/image00003.jpeg");
+      setShowImage(true);
+    } else {
+      // Si on affiche déjà une image, mais que le score n'est plus un score milestone
+      // Ne pas exécuter ceci si showImage est déjà false pour éviter des re-renders inutiles
+      if (showImage) {
+        setShowImage(false);
+      }
+      return;
+    }
+    
+    // Masquer l'image après 0,5 secondes si elle est affichée
+    if (showImage) {
+      const timer = setTimeout(() => {
+        setShowImage(false);
+      }, 500);
+      
+      // Nettoyer le timer si le composant est démonté ou si le score change
+      return () => clearTimeout(timer);
+    }
+  }, [score, showImage]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedLeaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+      setLeaderboard(savedLeaderboard);
+    }
+  }, []);
+
   useEffect(() => {
     const handleResize = () => {
       const newWidth = window.innerWidth * 0.8;
@@ -53,40 +124,48 @@ const App = () => {
     setBallPos((prev) => {
       let { x, y, dx, dy } = prev;
 
-      // Collision with the walls (left and right)
-      if (x <= 0) {
-        dx = Math.abs(dx);
-        x = 0;
-      } else if (x + ballSize >= gameWidth) {
-        dx = -Math.abs(dx);
-        x = gameWidth - ballSize;
-      }
+      if (x <= 0 || x >= gameWidth - ballSize) dx = -dx;
+      if (y <= 0) dy = -dy;
 
-      // Collision with the top
-      if (y <= 0) {
-        dy = Math.abs(dy);
-        y = 0;
-      }
-
-      // Collision with the paddle
       if (
         y + ballSize >= gameHeight - paddleHeight &&
-        x + ballSize >= paddlePos &&
+        x >= paddlePos &&
         x <= paddlePos + paddleWidth
       ) {
-        dy = -Math.abs(dy);
-        y = gameHeight - paddleHeight - ballSize;
+        dy = -dy;
         setScore(score + 1);
+
+        const ballCenter = x + ballSize / 2;
+        const paddleCenter = paddlePos + paddleWidth / 2;
+        const distanceFromCenter = ballCenter - paddleCenter;
+        const maxDistance = paddleWidth / 2;
+
+        const maxSpeedIncrease = 1.05;
+        const speedFactor = 1 + Math.abs(distanceFromCenter) / maxDistance * 0.1;
+
+        const newSpeedMultiplier = Math.min(speedMultiplier * speedFactor, maxSpeedIncrease);
+        setSpeedMultiplier(newSpeedMultiplier);
+
+        dx *= newSpeedMultiplier;
+        dy *= newSpeedMultiplier;
       }
 
-      // If the ball falls out of the screen (bottom)
-      if (y + ballSize >= gameHeight) {
+      if (y + ballSize >= gameHeight - paddleHeight) {
+        if (x >= paddlePos && x <= paddlePos + paddleWidth) {
+          y = gameHeight - paddleHeight - ballSize;
+        }
+      }
+
+      if (y >= gameHeight) {
         const newLeaderboard = [...leaderboard, score].sort((a, b) => b - a).slice(0, 5);
         if (typeof window !== "undefined") {
           localStorage.setItem('leaderboard', JSON.stringify(newLeaderboard));
         }
         setLeaderboard(newLeaderboard);
         setScore(0);
+        setSpeedMultiplier(1);
+
+        setDvdBouncers([]);
         return randomBallStart();
       }
 
@@ -156,8 +235,53 @@ const App = () => {
 
   return (
     <div className='ok'>
-      <div className="game-container" style={{ width: gameWidth, height: gameHeight }}>
+      
+      <div className="game-container" style={{ width: gameWidth, height: gameHeight, position: 'relative' }}>
         <div className="background-game" style={{ width: gameWidth, height: gameHeight }}></div>
+
+        { }
+        {dvdBouncers.map((bouncer) => (
+          <div
+            key={bouncer.id}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              zIndex: 5,
+              pointerEvents: 'none'
+            }}
+          >
+            <DVDBouncer 
+              containerWidth={gameWidth} 
+              containerHeight={gameHeight} 
+              initialX={Math.random() * gameWidth} 
+              initialY={Math.random() * gameHeight}
+            />
+          </div>
+        ))}
+
+        {/* Affichage de l'image conditionnellement */}
+        {showImage && currentImage && (
+          <div 
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 10, // Valeur élevée pour être au-dessus de tous les autres éléments
+              width: '150px', // Ajustez selon vos besoins
+              height: '150px', // Ajustez selon vos besoins
+            }}
+          >
+            <img 
+              src={currentImage} 
+              alt="Milestone achievement" 
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          </div>
+        )}
 
         <div className="scoreboard">
           <h2>Score: {score}</h2>
