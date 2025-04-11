@@ -321,6 +321,11 @@ const App = () => {
           </Link>
         </div>
         <div className="button-container">
+          <Link to="/samule">
+            <button className='boutton'>Samule</button>
+          </Link>
+        </div>
+        <div className="button-container">
           <Link to="/foodtrucks">
             <button className='boutton'>foodtrucks</button>
           </Link>

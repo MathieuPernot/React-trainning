@@ -3,6 +3,7 @@ import '../styles/test.css';
 import '../styles/globals.css';
 import '../styles/foodtruck.css';
 import '../styles/gaben.css';
+import '../styles/samule.css';
 
 import { Analytics } from "@vercel/analytics/react"
 
@@ -13,6 +14,7 @@ import Home from './index';
 import About from './test';
 import Foodtruck from './foodtruck';
 import Gaben from './gaben';
+import Samule from './samule';
 
 
 
@@ -35,6 +37,8 @@ function MyApp() {
           <Route path="/test" element={<About />} />
           <Route path="/foodtrucks" element={<Foodtruck />} />
           <Route path="/gaben" element={<Gaben />} />
+          <Route path="/samule" element={<Samule />} />
+
         </Routes>
       </Router>
       <Analytics />
