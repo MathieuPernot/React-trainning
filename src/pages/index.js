@@ -212,7 +212,10 @@ const App = () => {
   const handleTouchEnd = () => {
   };
 
-
+  const handleMouseMove = (event) => {
+    const newPos = Math.min(Math.max(event.clientX - paddleWidth / 2, 0), gameWidth - paddleWidth);
+    setPaddlePos(newPos);
+  };
 
   useEffect(() => {
     if (isBallInitialized) {
