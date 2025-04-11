@@ -197,7 +197,6 @@ const App = () => {
   }, [gameWidth]);
 
   const handleTouchMove = (event) => {
-    if (!isTouching) return;
     const touchY = event.touches[0].clientY;
     const newPos = Math.min(Math.max(touchY - paddleHeight / 2, 0), gameHeight - paddleHeight);
     setPaddlePos(newPos);
