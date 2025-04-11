@@ -12,7 +12,7 @@ const App = () => {
   const [gameHeight, setGameHeight] = useState(0);
 
   const ballSize = 50;
-  const paddleWidth = 150;
+  const paddleWidth = 100;
   const paddleHeight = 10;
 
   const [isTouching, setIsTouching] = useState(false);
@@ -196,18 +196,15 @@ const App = () => {
     };
   }, [gameWidth]);
 
-  const handleTouchStart = (event) => {
+  const handleTouchMove = (event) => {
     const touchY = event.touches[0].clientY;
     const newPos = Math.min(Math.max(touchY - paddleHeight / 2, 0), gameHeight - paddleHeight);
     setPaddlePos(newPos);
-    setIsTouching(true);
   };
 
-  const handleTouchMove = (event) => {
-    if (!isTouching) return;
-    const touchY = event.touches[0].clientY;
-    const newPos = Math.min(Math.max(touchY - paddleHeight / 2, 0), gameHeight - paddleHeight);
-    setPaddlePos(newPos);
+  const handleTouchStart = (event) => {
+    setIsTouching(true);
+    handleTouchMove(event);
   };
 
   const handleTouchEnd = () => {
