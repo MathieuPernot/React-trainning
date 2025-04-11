@@ -197,25 +197,21 @@ const App = () => {
   }, [gameWidth]);
 
   const handleTouchMove = (event) => {
-    if (!isTouching) return;
-    const touchY = event.touches[0].clientY;
-    const newPos = Math.min(Math.max(touchY - paddleHeight / 2, 0), gameHeight - paddleHeight);
+    event.preventDefault();
+    const touchX = event.touches[0].clientX;
+    const newPos = Math.min(Math.max(touchX - paddleWidth / 2, 0), gameWidth - paddleWidth);
     setPaddlePos(newPos);
   };
+
 
   const handleTouchStart = (event) => {
-    setIsTouching(true);
-    handleTouchMove(event);
+    event.preventDefault();
   };
+
 
   const handleTouchEnd = () => {
-    setIsTouching(false);
   };
 
-  const handleMouseMove = (event) => {
-    const newPos = Math.min(Math.max(event.clientX - paddleWidth / 2, 0), gameWidth - paddleWidth);
-    setPaddlePos(newPos);
-  };
 
 
   useEffect(() => {
