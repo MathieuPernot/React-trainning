@@ -31,22 +31,15 @@ const App = () => {
 
 
   useEffect(() => {
-
     const bouncersCount = Math.floor(score / 2);
-
-
     if (bouncersCount > dvdBouncers.length) {
-
       const newBouncers = [...dvdBouncers];
-
-
       for (let i = dvdBouncers.length; i < bouncersCount; i++) {
-        newBouncers.push({ id: i });
+        newBouncers.push({ id: i, x: Math.random() * gameWidth, y: Math.random() * gameHeight });
       }
-
-      setDvdBouncers(newBouncers);
+      setDvdBouncers(newBouncers); 
     }
-  }, [score, dvdBouncers]);
+}, [score, dvdBouncers]);
 
 
   useEffect(() => {
@@ -119,40 +112,43 @@ const App = () => {
   const moveBall = () => {
     setBallPos((prev) => {
       let { x, y, dx, dy } = prev;
-
-      if (x <= 0 || x >= gameWidth - ballSize) dx = -dx;
-      if (y <= 0) dy = -dy;
-
+  
+      // Vérifier la collision avec les bords gauche et droit de l'écran
+      if (x <= 0 || x >= gameWidth - ballSize) {
+        dx = -dx; // Inverser la direction horizontale si la balle touche un bord
+      }
+  
+      // Vérifier la collision avec le bord supérieur de l'écran
+      if (y <= 0) {
+        dy = -dy; // Inverser la direction verticale si la balle touche le haut
+      }
+  
+      // Vérifier la collision avec la barre (tout le côté de la barre, y compris les bords)
+      // La balle doit être à peu près au niveau de la barre et dans la largeur de la barre
       if (
-        y + ballSize >= gameHeight - paddleHeight &&
-        x >= paddlePos &&
-        x <= paddlePos + paddleWidth
+        y + ballSize >= gameHeight - paddleHeight &&  // La balle touche le bas de l'écran où la barre est située
+        x + ballSize > paddlePos &&                    // La balle touche la partie droite de la barre
+        x < paddlePos + paddleWidth                    // La balle touche la partie gauche de la barre
       ) {
-        dy = -dy;
-        setScore(score + 1);
-
-        const ballCenter = x + ballSize / 2;
-        const paddleCenter = paddlePos + paddleWidth / 2;
+        dy = -dy; // La balle rebondit en inversant sa direction verticale
+  
+        // Optionnel: ajout de la logique pour augmenter la vitesse en fonction de l'impact
+        setScore(score + 1); // Augmenter le score à chaque rebond
+  
+        const ballCenter = x + ballSize / 2;         // Position du centre de la balle
+        const paddleCenter = paddlePos + paddleWidth / 2;  // Position du centre de la barre
         const distanceFromCenter = ballCenter - paddleCenter;
-        const maxDistance = paddleWidth / 2;
-
-        const maxSpeedIncrease = 1.05;
+        const maxDistance = paddleWidth / 2;           // Largeur maximale sur laquelle la balle peut toucher
+  
+        // Calcul de la vitesse en fonction de l'endroit où la balle touche la barre
         const speedFactor = 1 + Math.abs(distanceFromCenter) / maxDistance * 0.1;
-
-        const newSpeedMultiplier = Math.min(speedMultiplier * speedFactor, maxSpeedIncrease);
-        setSpeedMultiplier(newSpeedMultiplier);
-
-        dx *= newSpeedMultiplier;
-        dy *= newSpeedMultiplier;
+        dx *= speedFactor; // Appliquer la vitesse horizontale
+        dy *= speedFactor; // Appliquer la vitesse verticale
       }
-
-      if (y + ballSize >= gameHeight - paddleHeight) {
-        if (x >= paddlePos && x <= paddlePos + paddleWidth) {
-          y = gameHeight - paddleHeight - ballSize;
-        }
-      }
-
-      if (y >= gameHeight) {
+  
+      // Si la balle passe sous la barre (game over)
+      if (y + ballSize >= gameHeight) {
+        // Mettre à jour le leaderboard et réinitialiser le jeu
         const newLeaderboard = [...leaderboard, score].sort((a, b) => b - a).slice(0, 5);
         if (typeof window !== "undefined") {
           localStorage.setItem('leaderboard', JSON.stringify(newLeaderboard));
@@ -160,14 +156,14 @@ const App = () => {
         setLeaderboard(newLeaderboard);
         setScore(0);
         setSpeedMultiplier(1);
-
         setDvdBouncers([]);
-        return randomBallStart();
+        return randomBallStart();  // Repartir avec une nouvelle balle au départ
       }
-
+  
       return { x: x + dx, y: y + dy, dx, dy };
     });
   };
+  
 
 
   const randomBallStart = () => {
@@ -245,7 +241,7 @@ const App = () => {
             }}
           >
             <DVDBouncer
-              containerWidth={gameWidth}
+              containerWidth={gameWidth + 300}
               containerHeight={gameHeight}
               initialX={Math.random() * gameWidth}
               initialY={Math.random() * gameHeight}
