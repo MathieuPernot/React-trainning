@@ -13,8 +13,7 @@ html {
 
 .ok {
   background-image: url('https://media.licdn.com/dms/image/v2/D4D03AQFiK4yzH4s1Zg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1713801112916?e=2147483647&v=beta&t=UXyPTHZ0tz0tWynIF7smhJmC7FvJdXWPzDVXtCk9QQY');
-  background-size: 'cover';
-  background-position: 'center';
+  background-position: center;
 }
 
 .game-container {
@@ -22,19 +21,23 @@ html {
   background-color: #000;
   margin: auto;
   overflow: hidden;
+  width: 100%;
+  height: 50vh;
 }
 
 .background-game {
   background-image: url('https://www.herault-tribune.com/wp-content/uploads/2021/06/CGI-castlenau-le-lez-2-1024x600.jpg');
-  background-size: 'cover';
-  background-position: 'center';
-  opacity: 0.6
+  background-size: cover;
+  background-position: center;
+  opacity: 0.6;
 }
 
 .ball {
   position: absolute;
   background-color: red;
   border-radius: 50%;
+  width: 10px;
+  height: 10px;
 }
 
 .paddle {
@@ -42,6 +45,8 @@ html {
   background-color: #4CAF50;
   bottom: 0;
   border-radius: 5px;
+  width: 150px;
+  height: 10px;
 }
 
 .scoreboard {
@@ -75,6 +80,7 @@ html {
   list-style-type: none;
 }
 
+
 @media (max-width: 600px) {
 
   .scoreboard,
@@ -83,12 +89,48 @@ html {
   }
 
   .ball {
-    width: 10vw;
-    height: 10vw;
+    position: absolute;
+    background-color: red;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
   }
 
   .paddle {
-    height: 5vh;
+    height: 7vh;
+  }
+
+  .game-container {
+    height: 40vh;
+  }
+
+  .rainbow-text {
+    font-size: 2rem;
+    margin-top: 10px;
+  }
+
+  .button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .boutton {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+
+  .outside-game {
+    height: 30vh;
+    padding: 10px;
+  }
+
+  .fixed-button {
+    bottom: 10px;
+    right: 10px;
+    padding: 8px 16px;
   }
 }
 
