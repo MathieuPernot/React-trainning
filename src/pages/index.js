@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 import DVDBouncer from '../comp/DVDBouncer';
 
 const App = () => {
-  const ballRef = useRef(null);
-  const paddleRef = useRef(null);
 
   const [ballPos, setBallPos] = useState({ x: 50, y: 50, dx: 5, dy: 2 });
   const [paddlePos, setPaddlePos] = useState(50);
@@ -20,17 +18,15 @@ const App = () => {
   const [isTouching, setIsTouching] = useState(false);
   const [isBallInitialized, setIsBallInitialized] = useState(false);
 
-  
 
-  // Resize handler to adjust the game size
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
-  
-  // État pour l'image à afficher
+
+
   const [currentImage, setCurrentImage] = useState(null);
-  // État pour gérer l'affichage de l'image
+
   const [showImage, setShowImage] = useState(false);
 
-  // Modification ici : on garde un tableau de bouncers plutôt qu'un seul booléen
+
   const [dvdBouncers, setDvdBouncers] = useState([]);
 
 
@@ -52,9 +48,9 @@ const App = () => {
     }
   }, [score, dvdBouncers]);
 
-  // Effet pour surveiller le score et afficher l'image correspondante
+
   useEffect(() => {
-    // Définir quelle image afficher selon le score
+
     if (score === 5) {
       setCurrentImage("/image00001.jpeg");
       setShowImage(true);
@@ -65,21 +61,21 @@ const App = () => {
       setCurrentImage("/image00003.jpeg");
       setShowImage(true);
     } else {
-      // Si on affiche déjà une image, mais que le score n'est plus un score milestone
-      // Ne pas exécuter ceci si showImage est déjà false pour éviter des re-renders inutiles
+
+
       if (showImage) {
         setShowImage(false);
       }
       return;
     }
-    
-    // Masquer l'image après 0,5 secondes si elle est affichée
+
+
     if (showImage) {
       const timer = setTimeout(() => {
         setShowImage(false);
       }, 500);
-      
-      // Nettoyer le timer si le composant est démonté ou si le score change
+
+
       return () => clearTimeout(timer);
     }
   }, [score, showImage]);
@@ -111,15 +107,15 @@ const App = () => {
     };
   }, []);
 
-  // Initialize the ball when game size is set
+
   useEffect(() => {
     if (gameWidth > 0 && gameHeight > 0 && !isBallInitialized) {
       setBallPos(randomBallStart());
-      setIsBallInitialized(true); // Mark ball as initialized
+      setIsBallInitialized(true);
     }
   }, [gameWidth, gameHeight, isBallInitialized]);
 
-  // Move the ball
+
   const moveBall = () => {
     setBallPos((prev) => {
       let { x, y, dx, dy } = prev;
@@ -173,7 +169,7 @@ const App = () => {
     });
   };
 
-  // Start the ball at a random position
+
   const randomBallStart = () => {
     const safeWidth = Math.max(gameWidth, ballSize);
     const safeHeight = Math.max(gameHeight, ballSize);
@@ -185,7 +181,7 @@ const App = () => {
     return { x: randomX, y: randomY, dx: randomDx, dy: randomDy };
   };
 
-  // Event listeners for touch and mouse events
+
   useEffect(() => {
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('touchstart', handleTouchStart);
@@ -200,18 +196,17 @@ const App = () => {
     };
   }, [gameWidth]);
 
-  // Touch event handlers for mobile
   const handleTouchStart = (event) => {
-    const touchX = event.touches[0].clientX;
-    const newPos = Math.min(Math.max(touchX - paddleWidth / 2, 0), gameWidth - paddleWidth);
+    const touchY = event.touches[0].clientY;
+    const newPos = Math.min(Math.max(touchY - paddleHeight / 2, 0), gameHeight - paddleHeight);
     setPaddlePos(newPos);
     setIsTouching(true);
   };
 
   const handleTouchMove = (event) => {
     if (!isTouching) return;
-    const touchX = event.touches[0].clientX;
-    const newPos = Math.min(Math.max(touchX - paddleWidth / 2, 0), gameWidth - paddleWidth);
+    const touchY = event.touches[0].clientY;
+    const newPos = Math.min(Math.max(touchY - paddleHeight / 2, 0), gameHeight - paddleHeight);
     setPaddlePos(newPos);
   };
 
@@ -219,13 +214,12 @@ const App = () => {
     setIsTouching(false);
   };
 
-  // Mouse event handlers for desktop
   const handleMouseMove = (event) => {
     const newPos = Math.min(Math.max(event.clientX - paddleWidth / 2, 0), gameWidth - paddleWidth);
     setPaddlePos(newPos);
   };
 
-  // Start the movement when the ball is initialized
+
   useEffect(() => {
     if (isBallInitialized) {
       const interval = setInterval(moveBall, 10);
@@ -235,7 +229,7 @@ const App = () => {
 
   return (
     <div className='ok'>
-      
+
       <div className="game-container" style={{ width: gameWidth, height: gameHeight, position: 'relative' }}>
         <div className="background-game" style={{ width: gameWidth, height: gameHeight }}></div>
 
@@ -253,31 +247,31 @@ const App = () => {
               pointerEvents: 'none'
             }}
           >
-            <DVDBouncer 
-              containerWidth={gameWidth} 
-              containerHeight={gameHeight} 
-              initialX={Math.random() * gameWidth} 
+            <DVDBouncer
+              containerWidth={gameWidth}
+              containerHeight={gameHeight}
+              initialX={Math.random() * gameWidth}
               initialY={Math.random() * gameHeight}
             />
           </div>
         ))}
 
-        {/* Affichage de l'image conditionnellement */}
+        { }
         {showImage && currentImage && (
-          <div 
+          <div
             style={{
               position: 'absolute',
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              zIndex: 10, // Valeur élevée pour être au-dessus de tous les autres éléments
-              width: '150px', // Ajustez selon vos besoins
-              height: '150px', // Ajustez selon vos besoins
+              zIndex: 10,
+              width: '150px',
+              height: '150px',
             }}
           >
-            <img 
-              src={currentImage} 
-              alt="Milestone achievement" 
+            <img
+              src={currentImage}
+              alt="Milestone achievement"
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </div>
@@ -326,7 +320,7 @@ const App = () => {
       </div>
 
       <div className="rainbow-text">WOOOO LE GAMING</div>
-      
+
       <div className="container2">
         <div className="button-container">
           <Link to="/test">
@@ -339,7 +333,7 @@ const App = () => {
           </Link>
         </div>
       </div>
-      
+
       <div className="outside-game">
         <Link to="/gaben">
           <button className="fixed-button"> ?????</button>
