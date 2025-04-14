@@ -14,9 +14,9 @@ const TestPage = () => {
                 description: "Burgers, kebab, plat du jour, entre 10€ et 15€ hors dessert (4€)"
             },
             {
-                name: "Go for eat",
-                image: "https://www.eventigo.eu/assets/timthumb.php?src=https://www.eventigo.eu/img/uploads/photos/3fbca444b515094756960f62f7f09749.jpg&w=650&h=420&zc=1&q=95",
-                description: "Bruchetta et autre (manque d'info)"
+                name: "Good Food",
+                image: "/goodfood.jpg",
+                description: "Ravioles et pates, entre 9€ et 11€ hors dessert (3.5€)"
             }
         ],
         Mardi: [
