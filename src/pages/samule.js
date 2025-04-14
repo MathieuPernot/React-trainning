@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const Game = () => {
+  const TIME_LIMIT = 60000; // 60 seconds
+
   const headsRef = useRef([
     {
       id: 1,
@@ -14,18 +16,19 @@ const Game = () => {
 
   const [heads, setHeads] = useState(headsRef.current);
   const [rounds, setRounds] = useState(1);
+  const [lives, setLives] = useState(3);
+  const [gameOver, setGameOver] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(TIME_LIMIT);
+  const timerRef = useRef(null);
 
-  // Fonction pour générer une direction aléatoire pour les têtes
   const getRandomVelocity = () => {
     return {
-      velocityX: Math.random() > 0.5 ? 1 : -1, // direction aléatoire sur X
-      velocityY: Math.random() > 0.5 ? 1 : -1, // direction aléatoire sur Y
-    };
+    velocityX: Math.random() > 0.5 ? 1 : -1,
+    velocityY: Math.random() > 0.5 ? 1 : -1,
+    }
   };
 
-  // Fonction pour réinitialiser les têtes à chaque round avec 2 nouvelles têtes
   const resetHeads = () => {
-    // Nouveau Mario (ID 1)
     const newMario = {
       id: 1,
       image: 'samule.png',
@@ -34,12 +37,11 @@ const Game = () => {
       ...getRandomVelocity(),
     };
 
-    // Ajouter Peach et Luigi (ID 2 et 3)
     const newPeach = {
       id: 2,
       image: 'https://media.licdn.com/dms/image/v2/D5603AQFnpp6_sBviuQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1705573822826?e=2147483647&v=beta&t=UtAHPpShbv2mv5Vw4Pho5mtDPs0QI2v6dF2cJRkPFM8',
       left: Math.random() * window.innerWidth / 1.1,
-      top: Math.random() * window.innerHeight/ 1.1,
+      top: Math.random() * window.innerHeight / 1.1,
       ...getRandomVelocity(),
     };
 
@@ -51,19 +53,19 @@ const Game = () => {
       ...getRandomVelocity(),
     };
 
-    // Ajouter les nouvelles têtes dans le tableau
     headsRef.current = [newMario, newPeach, newLuigi, ...headsRef.current.filter(head => head.id !== 1)];
-    setHeads([...headsRef.current]); // Forcer un rerender
-    setRounds(rounds + 1); // Incrémenter le nombre de rounds
+    setHeads([...headsRef.current]);
+
+    setRounds(rounds + 1);
+    setTimeLeft(TIME_LIMIT);
+    restartTimer();
   };
 
-  // Mettre à jour la position des têtes
   const updatePositions = () => {
     headsRef.current.forEach(head => {
       let newLeft = head.left + head.velocityX;
       let newTop = head.top + head.velocityY;
 
-      // Vérifier les collisions avec les bords de l'écran
       if (newLeft <= 0 || newLeft >= window.innerWidth - 50) {
         head.velocityX = -head.velocityX;
       }
@@ -72,15 +74,13 @@ const Game = () => {
         head.velocityY = -head.velocityY;
       }
 
-      // Mettre à jour les positions
       head.left = newLeft;
       head.top = newTop;
     });
 
-    setHeads([...headsRef.current]); // Mettre à jour les positions à chaque frame
+    setHeads([...headsRef.current]);
   };
 
-  // Animation des têtes avec `requestAnimationFrame`
   useEffect(() => {
     const moveHeads = () => {
       updatePositions();
@@ -91,21 +91,57 @@ const Game = () => {
     return () => cancelAnimationFrame(moveHeads);
   }, []);
 
-  // Vérifier le clic sur Mario (ID 1)
-  const checkClick = (e) => {
-    const { clientX, clientY } = e;
-    const mario = headsRef.current.find(head => head.id === 1);
+  useEffect(() => {
+    restartTimer();
+    return () => clearInterval(timerRef.current);
+  }, []);
 
-    if (mario) {
-      const marioLeft = mario.left;
-      const marioTop = mario.top;
-      const marioSize = 50; // Taille des têtes (ajuster si nécessaire)
+  const restartTimer = () => {
+    clearInterval(timerRef.current);
+    setTimeLeft(TIME_LIMIT);
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1000) {
+          clearInterval(timerRef.current);
+          loseLife();
+          return 0;
+        }
+        return prev - 1000;
+      });
+    }, 1000);
+  };
+
+  const loseLife = () => {
+    setLives(prev => {
+      const remaining = prev - 1;
+      if (remaining <= 0) {
+        setGameOver(true);
+        clearInterval(timerRef.current);
+      }
+      return remaining;
+    });
+  };
+
+  const checkClick = (e) => {
+    if (gameOver) return;
+
+    const { clientX, clientY } = e;
+
+    for (const head of headsRef.current) {
+      const { left, top } = head;
+      const size = 50;
 
       if (
-        clientX >= marioLeft && clientX <= marioLeft + marioSize &&
-        clientY >= marioTop && clientY <= marioTop + marioSize
+        clientX >= left && clientX <= left + size &&
+        clientY >= top && clientY <= top + size
       ) {
-        resetHeads(); // Démarrer un nouveau round
+        if (head.id === 1) {
+          resetHeads(); // good click
+        } else {
+          loseLife(); // wrong click
+        }
+        break;
       }
     }
   };
@@ -114,13 +150,13 @@ const Game = () => {
     <div
       style={{
         position: 'relative',
-        width: '100vw', // occupe toute la largeur de l'écran
-        height: '100vh', // occupe toute la hauteur de l'écran
-        overflow: 'hidden', // empêcher les têtes de sortir de l'écran
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
         backgroundColor: 'black',
         cursor: 'crosshair',
       }}
-      onClick={checkClick} // Vérifier si Mario est cliqué
+      onClick={checkClick}
     >
       {heads.map((head) => (
         <img
@@ -132,23 +168,38 @@ const Game = () => {
             left: `${head.left}px`,
             top: `${head.top}px`,
             borderRadius: '50%',
-            width: '50px',  // Taille des têtes
-            height: '50px', // Taille des têtes
-            transition: 'none',  // Pas de transition pour éviter les "accoups"
+            width: '50px',
+            height: '50px',
+            transition: 'none',
           }}
         />
       ))}
-      <div 
-        style={{
-          position: 'absolute',
-          bottom: '20px',
-          left: '20px',
-          color: 'white',
-          fontSize: '20px',
-        }}
-      >
-        Round : {rounds} {/* Afficher le nombre de rounds */}
+
+      <div style={{
+        position: 'absolute',
+        bottom: '20px',
+        left: '20px',
+        color: 'white',
+        fontSize: '20px',
+      }}>
+        Round : {rounds} <br />
+        Vies : {lives} <br />
+        Temps restant : {Math.ceil(timeLeft / 1000)}s
       </div>
+
+      {gameOver && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          color: 'red',
+          fontSize: '40px',
+          fontWeight: 'bold',
+        }}>
+          GAME OVER
+        </div>
+      )}
     </div>
   );
 };
