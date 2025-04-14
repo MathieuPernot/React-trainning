@@ -104,7 +104,7 @@ const Game = () => {
       setTimeLeft(prev => {
         if (prev <= 1000) {
           clearInterval(timerRef.current);
-          loseLife();
+          setGameOver(true);
           return 0;
         }
         return prev - 1000;
@@ -155,6 +155,7 @@ const Game = () => {
         overflow: 'hidden',
         backgroundColor: 'black',
         cursor: 'crosshair',
+        userSelect: 'none',
       }}
       onClick={checkClick}
     >
