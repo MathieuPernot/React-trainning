@@ -15,7 +15,7 @@ import About from './test';
 import Foodtruck from './foodtruck';
 import Gaben from './gaben';
 import Samule from './samule';
-
+import Perudo from '../perudo/Home';
 
 
 function MyApp() {
@@ -38,6 +38,7 @@ function MyApp() {
           <Route path="/foodtrucks" element={<Foodtruck />} />
           <Route path="/gaben" element={<Gaben />} />
           <Route path="/samule" element={<Samule />} />
+          <Route path="/perudo" element={<Perudo />} />
 
         </Routes>
       </Router>

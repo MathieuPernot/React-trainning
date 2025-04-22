@@ -331,6 +331,11 @@ const App = () => {
           </Link>
         </div>
       </div>
+      <div className="button-container">
+          <Link to="/perudo">
+            <button className='boutton'>perudo</button>
+          </Link>
+        </div>
 
       <div className="outside-game">
         <Link to="/gaben">
