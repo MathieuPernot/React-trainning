@@ -4,7 +4,6 @@ import db from './config';
 
 const GAME_COLLECTION = 'games';
 const ROOM_ID = 'perudo-room';
-console.log("DB object:", db); // Vérifiez ce qui est importé
 
 // Vérifie si une room existe
 export const checkRoomExists = async () => {
@@ -379,8 +378,10 @@ export const subscribeToGame = (callback) => {
     const roomRef = doc(db, GAME_COLLECTION, ROOM_ID);
     return onSnapshot(roomRef, (doc) => {
         if (doc.exists()) {
+            console.log(`Game data updated: ${JSON.stringify(doc.data())}`);
             callback(doc.data());
         } else {
+            console.log('No such document!');
             callback(null);
         }
     });
@@ -423,3 +424,23 @@ export const resetGame = async () => {
         round: 0
     };
 };
+
+
+// Dans gameService.js
+export const testFirestoreConnection = async () => {
+    try {
+      const roomRef = doc(db, GAME_COLLECTION, ROOM_ID);
+      const docSnap = await getDoc(roomRef);
+      
+      if (docSnap.exists()) {
+        console.log("Document data:", docSnap.data());
+        return docSnap.data();
+      } else {
+        console.log("No such document!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error testing Firestore connection:", error);
+      return null;
+    }
+  };
