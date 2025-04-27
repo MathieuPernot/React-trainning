@@ -1,0 +1,68 @@
+:root {
+  --perudo-white: #EBF7DD;
+  --perudo-black: #03201C;
+  --perudo-main: #9DFD2C;
+  --perudo-light-black: #02211C;
+  --perudo-grey: #193D39;
+  --perudo-light-grey: #315B57;
+  --perudo-bonus: #310276;
+
+  --perudo-radius: 12px;
+  --perudo-padding: 1.5rem;
+  --perudo-font: 'Montserrat', 'Arial', sans-serif;
+}
+
+.perudo-app {
+  background: var(--perudo-black);
+  color: var(--perudo-white);
+  font-family: var(--perudo-font);
+  min-height: 100vh;
+  padding: var(--perudo-padding);
+}
+
+.perudo-btn {
+  background: var(--perudo-main);
+  color: var(--perudo-black);
+  border-radius: var(--perudo-radius);
+  padding: 0.75em 2em;
+  border: none;
+  font-weight: bold;
+  font-family: var(--perudo-font);
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+}
+.perudo-btn:hover {
+  background: var(--perudo-bonus);
+  color: var(--perudo-white);
+}
+
+.perudo-card {
+  background: var(--perudo-grey);
+  border-radius: var(--perudo-radius);
+  padding: 1em;
+  box-shadow: 0 2px 8px rgba(3,32,28,0.15);
+  margin-bottom: 1em;
+}
+
+.perudo-input {
+  background: var(--perudo-light-grey);
+  color: var(--perudo-white);
+  border: none;
+  border-radius: var(--perudo-radius);
+  padding: 0.5em 1em;
+  font-size: 1em;
+  font-family: var(--perudo-font);
+}
+
+.perudo-title {
+  color: var(--perudo-main);
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  font-family: var(--perudo-font);
+}
+
+.perudo-bonus {
+  color: var(--perudo-bonus);
+  font-weight: bold;
+}

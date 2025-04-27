@@ -1,5 +1,5 @@
 // src/firebase/gameService.js
-import { collection, doc, getDoc, setDoc, updateDoc, onSnapshot, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { collection, doc, getDoc, setDoc, updateDoc, onSnapshot, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
 import db from './config';
 
 const GAME_COLLECTION = 'games';
@@ -30,25 +30,43 @@ export const createRoom = async (hostPlayer) => {
     return gameData;
 };
 
-
 // Rejoindre une room existante
 export const joinRoom = async (player) => {
     const roomRef = doc(db, GAME_COLLECTION, ROOM_ID);
     const roomDoc = await getDoc(roomRef);
 
+    // Si la room n'existe pas, on la crée avec ce joueur comme hôte
     if (!roomDoc.exists()) {
-        throw new Error('Room not found');
+        return createRoom(player);
     }
 
     const roomData = roomDoc.data();
-    const playerExists = roomData.players.some(p => p.id === player.id);
+    
+    // Chercher si un joueur avec le même nom existe déjà
+    const existingPlayer = roomData.players.find(p => p.name.toLowerCase() === player.name.toLowerCase());
+    
+    if (existingPlayer) {
+        // Mettre à jour l'ID du joueur existant et le reconnecter
+        const updatedPlayers = roomData.players.map(p => 
+            p.name.toLowerCase() === player.name.toLowerCase()
+                ? { ...p, id: player.id, isConnected: true }
+                : p
+        );
 
-    if (playerExists) {
-        // Le joueur est déjà dans la room, mise à jour de ses informations
         await updateDoc(roomRef, {
-            players: roomData.players.map(p => p.id === player.id ? { ...p, isConnected: true } : p)
+            players: updatedPlayers
         });
+
+        return {
+            ...roomData,
+            players: updatedPlayers
+        };
     } else {
+        // Vérifier si la partie n'est pas déjà en cours
+        if (roomData.status === 'playing') {
+            throw new Error('La partie est déjà en cours, impossible de rejoindre maintenant');
+        }
+
         // Ajouter le nouveau joueur à la room
         await updateDoc(roomRef, {
             players: arrayUnion(player)
@@ -68,8 +86,19 @@ export const disconnectPlayer = async (playerId) => {
     }
 
     const roomData = roomDoc.data();
+    const updatedPlayers = roomData.players.map(p => 
+        p.id === playerId ? { ...p, isConnected: false } : p
+    );
+
+    // Si tous les joueurs sont déconnectés, supprimer la room
+    const anyConnectedPlayers = updatedPlayers.some(p => p.isConnected);
+    if (!anyConnectedPlayers) {
+        await deleteDoc(roomRef);
+        return;
+    }
+
     await updateDoc(roomRef, {
-        players: roomData.players.map(p => p.id === playerId ? { ...p, isConnected: false } : p)
+        players: updatedPlayers
     });
 };
 
@@ -105,6 +134,48 @@ export const startGame = async (playerIds) => {
     return roomDoc.data();
 };
 
+// Fonction utilitaire pour valider une enchère
+const isValidBid = (currentBid, lastBid) => {
+    // S'il n'y a pas d'enchère précédente, toute enchère est valide
+    if (!lastBid) return true;
+
+    // Les Paco (1) sont les plus forts
+    const currentValue = currentBid.diceValue;
+    const lastValue = lastBid.diceValue;
+    const currentCount = currentBid.diceCount;
+    const lastCount = lastBid.diceCount;
+
+    // Cas spécial : passage aux Paco
+    if (lastValue !== 1 && currentValue === 1) {
+        // Pour passer aux Paco, il faut au moins la moitié (arrondi supérieur) du nombre précédent
+        return currentCount >= Math.ceil(lastCount / 2);
+    }
+
+    // Cas spécial : enchère après les Paco
+    if (lastValue === 1 && currentValue !== 1) {
+        // Pour sortir des Paco, il faut au moins le double + 1
+        return currentCount >= (lastCount * 2) + 1;
+    }
+
+    // Même valeur de dé
+    if (currentValue === lastValue) {
+        return currentCount > lastCount;
+    }
+
+    // Valeur de dé différente
+    if (currentValue > lastValue) {
+        // On peut garder le même nombre de dés si la valeur est supérieure
+        return currentCount >= lastCount;
+    }
+
+    // Si la valeur est inférieure, il faut augmenter le nombre de dés
+    if (currentValue < lastValue) {
+        return currentCount > lastCount;
+    }
+
+    return false;
+};
+
 // Faire une enchère
 export const placeBid = async (playerId, bid) => {
     const roomRef = doc(db, GAME_COLLECTION, ROOM_ID);
@@ -116,10 +187,36 @@ export const placeBid = async (playerId, bid) => {
 
     const gameData = roomDoc.data();
 
+    // Vérifier si la partie est terminée
+    if (gameData.status === 'finished') {
+        throw new Error('La partie est terminée');
+    }
+
+    // Vérifier s'il reste assez de joueurs
+    const activePlayers = gameData.players.filter(p => p.diceCount > 0);
+    if (activePlayers.length <= 1) {
+        await updateDoc(roomRef, { status: 'finished' });
+        throw new Error('La partie est terminée, il ne reste qu\'un joueur');
+    }
+
+    // Vérifier si c'est bien le tour du joueur
+    if (gameData.currentTurn !== playerId) {
+        throw new Error('Ce n\'est pas votre tour');
+    }
+
+    // Valider l'enchère
+    if (gameData.lastBid && !isValidBid(bid, gameData.lastBid)) {
+        throw new Error('Enchère invalide : elle doit être supérieure à l\'enchère précédente');
+    }
+
     // Trouver l'index du joueur actuel et le joueur suivant
-    const currentPlayerIndex = gameData.players.findIndex(p => p.id === playerId);
-    const nextPlayerIndex = (currentPlayerIndex + 1) % gameData.players.filter(p => p.diceCount > 0).length;
-    const nextPlayer = gameData.players.filter(p => p.diceCount > 0)[nextPlayerIndex];
+    const currentPlayerIndex = activePlayers.findIndex(p => p.id === playerId);
+    if (currentPlayerIndex === -1) {
+        throw new Error('Joueur non trouvé ou n\'a plus de dés');
+    }
+
+    const nextPlayerIndex = (currentPlayerIndex + 1) % activePlayers.length;
+    const nextPlayer = activePlayers[nextPlayerIndex];
 
     // Mettre à jour les données de jeu
     await updateDoc(roomRef, {
@@ -390,41 +487,17 @@ export const subscribeToGame = (callback) => {
 // Réinitialiser le jeu
 export const resetGame = async () => {
     const roomRef = doc(db, GAME_COLLECTION, ROOM_ID);
-    const roomDoc = await getDoc(roomRef);
-
-    if (!roomDoc.exists()) {
-        throw new Error('Room not found');
+    
+    try {
+        // Supprimer complètement le document
+        await deleteDoc(roomRef);
+        console.log('Game room deleted successfully');
+        return null;
+    } catch (error) {
+        console.error('Error deleting game room:', error);
+        throw error;
     }
-
-    const gameData = roomDoc.data();
-
-    await updateDoc(roomRef, {
-        status: 'waiting',
-        players: gameData.players.map(p => ({
-            ...p,
-            dice: [],
-            diceCount: 0
-        })),
-        currentTurn: null,
-        lastBid: null,
-        round: 0,
-        gameLog: []
-    });
-
-    return {
-        ...gameData,
-        status: 'waiting',
-        players: gameData.players.map(p => ({
-            ...p,
-            dice: [],
-            diceCount: 0
-        })),
-        currentTurn: null,
-        lastBid: null,
-        round: 0
-    };
 };
-
 
 // Dans gameService.js
 export const testFirestoreConnection = async () => {
