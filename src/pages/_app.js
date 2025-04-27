@@ -4,6 +4,7 @@ import '../styles/globals.css';
 import '../styles/foodtruck.css';
 import '../styles/gaben.css';
 import '../styles/samule.css';
+import '../perudo/perudo.css';
 
 import { Analytics } from "@vercel/analytics/react"
 
