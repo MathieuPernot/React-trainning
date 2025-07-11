@@ -1,5 +1,7 @@
 // Countdown.jsx
 import React, { useEffect, useState } from 'react';
+import Ready from '../comp/Ready';
+
 
 const Leak = () => {
   const targetDate = new Date("2025-07-11T20:59:59").getTime();
@@ -39,11 +41,11 @@ const Leak = () => {
       {!finished ? (
         <div className="countdown-box">
           {hours}h {minutes}m {seconds}s
+          <Ready />
         </div>
       ) : (
         <div className="countdown-finished">
-          🎉 Temps écoulé !<br />
-          <span style={{ color: "#007700" }}>Bonne année ! 🎆</span>
+          <Ready />
         </div>
       )}
     </div>

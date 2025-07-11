@@ -221,7 +221,11 @@ const App = () => {
   }, [isBallInitialized, ballPos, score]);
 
   return (
-    <div className='ok'>
+    <div className='ok' style={{
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
+    maxHeight: '100vh'
+  }}>
 
       <div className="game-container" style={{ width: gameWidth, height: gameHeight, position: 'relative' }}>
         <div className="background-game" style={{ width: gameWidth, height: gameHeight }}></div>
