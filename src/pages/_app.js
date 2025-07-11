@@ -23,7 +23,7 @@ import Perudo from '../perudo/Home';
 import Leak from './leak';
 
 
-function MyApp({ Component, pageProps }) {
+function MyApp() {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -48,7 +48,6 @@ function MyApp({ Component, pageProps }) {
         </Routes>
       </Router>
       <Analytics />
-      <Component {...pageProps} />
     </>
   );
 }

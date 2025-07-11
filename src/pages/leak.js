@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import Ready from '../comp/Ready';
 
 const Digit = ({ number }) => (
   <span className="digital7 text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.9)] select-none text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem]">
@@ -24,7 +25,7 @@ const DigitalTime = ({ timeStr }) => (
 );
 
 const BombTimer = () => {
-  const targetDate = new Date("2025-07-11T20:59:59").getTime();
+  const targetDate = new Date("2025-07-12T21:00:00").getTime();
   const [timeLeft, setTimeLeft] = useState(targetDate - Date.now());
   const [finished, setFinished] = useState(false);
   const audioRef = useRef(null);
@@ -75,18 +76,17 @@ const BombTimer = () => {
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-6">
-      <h1 className="digital7 text-red-500 select-none mb-12 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
-        💣 Vos réponses arrivent 💣
-      </h1>
-
       {!finished ? (
-        <>
+        <div>
+        <h1 className=" text-red-500 select-none mb-12 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
+        💣 CHAAAIIII 💣
+         </h1>
           <DigitalTime timeStr={formatTime(timeLeft)} />
           <audio ref={audioRef} src="/theme.mp3" preload="auto" autoPlay loop />
-        </>
-      ) : (
-        <div className="text-red-600 select-none animate-bounce text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem]">
-          💥 BOUM ! 💥
+        </div>
+      ) :  (
+        <div className="countdown-finished">
+          <Ready />
         </div>
       )}
     </div>
