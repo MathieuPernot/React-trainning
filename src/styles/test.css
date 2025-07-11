@@ -192,3 +192,10 @@
   font-size: 14px;
   margin-top: 40px;
 }
+
+.button-leak {
+  margin-top: 10px;
+  height: 250px;
+  width: 450px;
+  font-size: 40px;
+}

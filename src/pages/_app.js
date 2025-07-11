@@ -5,6 +5,7 @@ import '../styles/foodtruck.css';
 import '../styles/gaben.css';
 import '../styles/samule.css';
 import '../perudo/perudo.css';
+import '../styles/leak.css';
 
 import { Analytics } from "@vercel/analytics/react"
 
@@ -17,6 +18,7 @@ import Foodtruck from './foodtruck';
 import Gaben from './gaben';
 import Samule from './samule';
 import Perudo from '../perudo/Home';
+import Leak from './leak';
 
 
 function MyApp() {
@@ -40,7 +42,7 @@ function MyApp() {
           <Route path="/gaben" element={<Gaben />} />
           <Route path="/samule" element={<Samule />} />
           <Route path="/perudo" element={<Perudo />} />
-
+          <Route path="/leak" element={<Leak />} />
         </Routes>
       </Router>
       <Analytics />

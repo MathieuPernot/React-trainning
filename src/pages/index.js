@@ -336,12 +336,18 @@ const App = () => {
             <button className='boutton'>perudo</button>
           </Link>
         </div>
+      <div className="button-container">
+        <Link to="/leak">
+          <button className="boutton button-leak"> Laisse feur c'est bien</button>
+        </Link>
+      </div>
 
       <div className="outside-game">
         <Link to="/gaben">
           <button className="fixed-button"> ?????</button>
         </Link>
       </div>
+
     </div>
   );
 };
