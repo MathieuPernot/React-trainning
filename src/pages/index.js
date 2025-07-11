@@ -202,7 +202,12 @@ const App = () => {
   }, [isBallInitialized, ballPos, score]);
 
   return (
-    <div className='ok'>
+    <div className='ok' style={{
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
+    maxHeight: '100vh'
+  }}>
+
       <div className="game-container" style={{ width: gameWidth, height: gameHeight, position: 'relative' }}>
         <div className="background-game" style={{ width: gameWidth, height: gameHeight }}></div>
 
@@ -315,12 +320,18 @@ const App = () => {
             <button className='boutton'>perudo</button>
           </Link>
         </div>
+      <div className="button-container">
+        <Link to="/leak">
+          <button className="boutton button-leak"> Laisse feur c'est bien</button>
+        </Link>
+      </div>
 
       <div className="outside-game">
         <Link to="/gaben">
           <button className="fixed-button"> ?????</button>
         </Link>
       </div>
+
     </div>
   );
 };
