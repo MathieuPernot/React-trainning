@@ -1,94 +1,75 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const Game = () => {
-  const TIME_LIMIT = 60000; // 60 seconds
+  const TIME_LIMIT = 20000; // 30 sec
+  const MAX_TIME = 30000;
+  const IMAGE_POOL = ['almosnino.jpg', 'sarcher.jpg', 'forax.jpg', 'lanau.jpg'];
 
-  const headsRef = useRef([
-    {
-      id: 1,
-      image: 'samule.png',
-      left: Math.random() * window.innerWidth,
-      top: Math.random() * window.innerHeight,
-      velocityX: 1,
-      velocityY: 1,
-    },
+  const getRandomVelocity = () => ({
+    velocityX: Math.random() > 0.5 ? 1 : -1,
+    velocityY: Math.random() > 0.5 ? 1 : -1,
+  });
+
+  const createHead = (id, image, zIndex = 1) => ({
+    id,
+    image,
+    left: Math.random() * (window.innerWidth - 50),
+    top: Math.random() * (window.innerHeight - 50),
+    ...getRandomVelocity(),
+    zIndex,
+  });
+
+  const [heads, setHeads] = useState([
+    createHead(1, 'samule.jpg', Math.floor(Math.random() * 6)),
+    createHead(2, getRandomImage()),
+    createHead(3, getRandomImage()),
   ]);
-
-  const [heads, setHeads] = useState(headsRef.current);
+  const [nextId, setNextId] = useState(4);
   const [rounds, setRounds] = useState(1);
   const [lives, setLives] = useState(3);
   const [gameOver, setGameOver] = useState(false);
   const [timeLeft, setTimeLeft] = useState(TIME_LIMIT);
+
   const timerRef = useRef(null);
+  const headsRef = useRef(heads);
 
-  const getRandomVelocity = () => {
-    return {
-    velocityX: Math.random() > 0.5 ? 1 : -1,
-    velocityY: Math.random() > 0.5 ? 1 : -1,
-    }
-  };
+  function getRandomImage() {
+    return IMAGE_POOL[Math.floor(Math.random() * IMAGE_POOL.length)];
+  }
 
-  const resetHeads = () => {
-    const newMario = {
-      id: 1,
-      image: 'samule.png',
-      left: Math.random() * window.innerWidth / 1.1,
-      top: Math.random() * window.innerHeight / 1.1,
-      ...getRandomVelocity(),
-    };
-
-    const newPeach = {
-      id: 2,
-      image: 'https://media.licdn.com/dms/image/v2/D5603AQFnpp6_sBviuQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1705573822826?e=2147483647&v=beta&t=UtAHPpShbv2mv5Vw4Pho5mtDPs0QI2v6dF2cJRkPFM8',
-      left: Math.random() * window.innerWidth / 1.1,
-      top: Math.random() * window.innerHeight / 1.1,
-      ...getRandomVelocity(),
-    };
-
-    const newLuigi = {
-      id: 3,
-      image: 'emma.png',
-      left: Math.random() * window.innerWidth / 1.1,
-      top: Math.random() * window.innerHeight / 1.1,
-      ...getRandomVelocity(),
-    };
-
-    headsRef.current = [newMario, newPeach, newLuigi, ...headsRef.current.filter(head => head.id !== 1)];
-    setHeads([...headsRef.current]);
-
-    setRounds(rounds + 1);
-    setTimeLeft(TIME_LIMIT);
-    restartTimer();
-  };
+  useEffect(() => {
+    headsRef.current = heads;
+  }, [heads]);
 
   const updatePositions = () => {
-    headsRef.current.forEach(head => {
+    const newHeads = headsRef.current.map(head => {
       let newLeft = head.left + head.velocityX;
       let newTop = head.top + head.velocityY;
+      let { velocityX, velocityY } = head;
 
       if (newLeft <= 0 || newLeft >= window.innerWidth - 50) {
-        head.velocityX = -head.velocityX;
+        velocityX = -velocityX;
       }
-
       if (newTop <= 0 || newTop >= window.innerHeight - 50) {
-        head.velocityY = -head.velocityY;
+        velocityY = -velocityY;
       }
 
-      head.left = newLeft;
-      head.top = newTop;
+      return { ...head, left: newLeft, top: newTop, velocityX, velocityY };
     });
 
-    setHeads([...headsRef.current]);
+    setHeads(newHeads);
   };
 
   useEffect(() => {
+    let animationFrameId;
+
     const moveHeads = () => {
       updatePositions();
-      requestAnimationFrame(moveHeads);
+      animationFrameId = requestAnimationFrame(moveHeads);
     };
 
-    requestAnimationFrame(moveHeads);
-    return () => cancelAnimationFrame(moveHeads);
+    animationFrameId = requestAnimationFrame(moveHeads);
+    return () => cancelAnimationFrame(animationFrameId);
   }, []);
 
   useEffect(() => {
@@ -98,7 +79,7 @@ const Game = () => {
 
   const restartTimer = () => {
     clearInterval(timerRef.current);
-    setTimeLeft(TIME_LIMIT);
+    setTimeLeft(prev => Math.min(prev + 5000, MAX_TIME));
 
     timerRef.current = setInterval(() => {
       setTimeLeft(prev => {
@@ -123,27 +104,68 @@ const Game = () => {
     });
   };
 
+  const resetHeads = () => {
+    const currentHeads = headsRef.current;
+
+    const resetCurrent = currentHeads.map(head => {
+      const isSamule = head.id === 1;
+      return {
+        ...head,
+        left: Math.random() * (window.innerWidth - 50),
+        top: Math.random() * (window.innerHeight - 50),
+        ...getRandomVelocity(),
+        zIndex: isSamule ? Math.floor(Math.random() * 6) : 1,
+      };
+    });
+
+    const newImages = [
+      createHead(nextId, getRandomImage()),
+      createHead(nextId + 1, getRandomImage()),
+    ];
+
+    setNextId(prev => prev + 2);
+    setHeads([...resetCurrent, ...newImages]);
+    setRounds(prev => prev + 1);
+    restartTimer();
+  };
+
   const checkClick = (e) => {
     if (gameOver) return;
 
     const { clientX, clientY } = e;
+    const size = 50;
 
     for (const head of headsRef.current) {
-      const { left, top } = head;
-      const size = 50;
-
       if (
-        clientX >= left && clientX <= left + size &&
-        clientY >= top && clientY <= top + size
+        clientX >= head.left && clientX <= head.left + size &&
+        clientY >= head.top && clientY <= head.top + size
       ) {
         if (head.id === 1) {
-          resetHeads(); // good click
+          resetHeads();
         } else {
-          loseLife(); // wrong click
+          loseLife();
         }
         break;
       }
     }
+  };
+
+  const goToHome = () => {
+    window.location.href = '/'; // à adapter selon ton routing
+  };
+
+  const replay = () => {
+    setHeads([
+      createHead(1, 'samule.jpg', Math.floor(Math.random() * 6)),
+      createHead(2, getRandomImage()),
+      createHead(3, getRandomImage()),
+    ]);
+    setNextId(4);
+    setRounds(1);
+    setLives(3);
+    setGameOver(false);
+    setTimeLeft(TIME_LIMIT);
+    restartTimer();
   };
 
   return (
@@ -159,46 +181,78 @@ const Game = () => {
       }}
       onClick={checkClick}
     >
-      {heads.map((head) => (
+      {heads.map(head => (
         <img
           key={head.id}
           src={head.image}
           alt={`head-${head.id}`}
           style={{
             position: 'absolute',
-            left: `${head.left}px`,
-            top: `${head.top}px`,
+            left: head.left,
+            top: head.top,
             borderRadius: '50%',
-            width: '50px',
-            height: '50px',
+            width: 50,
+            height: 50,
             transition: 'none',
+            zIndex: head.zIndex,
           }}
         />
       ))}
 
-      <div style={{
-        position: 'absolute',
-        bottom: '20px',
-        left: '20px',
-        color: 'white',
-        fontSize: '20px',
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 20,
+          left: 20,
+          color: 'white',
+          fontSize: 20,
+        }}
+      >
         Round : {rounds} <br />
         Vies : {lives} <br />
         Temps restant : {Math.ceil(timeLeft / 1000)}s
       </div>
 
       {gameOver && (
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          color: 'red',
-          fontSize: '40px',
-          fontWeight: 'bold',
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'red',
+            fontSize: 40,
+            fontWeight: 'bold',
+            textAlign: 'center',
+          }}
+        >
           GAME OVER
+          <br />
+          <button
+            onClick={replay}
+            style={{
+              marginTop: 20,
+              fontSize: 20,
+              padding: '10px 20px',
+              cursor: 'pointer',
+            }}
+          >
+            Rejouer
+          </button>
+          <br />
+          <button
+            onClick={goToHome}
+            style={{
+              marginTop: 10,
+              fontSize: 18,
+              padding: '8px 16px',
+              cursor: 'pointer',
+              backgroundColor: 'white',
+              border: 'none',
+            }}
+          >
+            Retour à l’accueil
+          </button>
         </div>
       )}
     </div>
