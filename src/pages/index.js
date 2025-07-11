@@ -222,6 +222,7 @@ const App = () => {
 
   return (
     <div className='ok'>
+    <link href="https://fonts.cdnfonts.com/css/digital-7" rel="stylesheet" />
 
       <div className="game-container" style={{ width: gameWidth, height: gameHeight, position: 'relative' }}>
         <div className="background-game" style={{ width: gameWidth, height: gameHeight }}></div>

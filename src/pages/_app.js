@@ -6,6 +6,8 @@ import '../styles/gaben.css';
 import '../styles/samule.css';
 import '../perudo/perudo.css';
 import '../styles/leak.css';
+import '../styles/font.css';
+
 
 import { Analytics } from "@vercel/analytics/react"
 
@@ -21,7 +23,7 @@ import Perudo from '../perudo/Home';
 import Leak from './leak';
 
 
-function MyApp() {
+function MyApp({ Component, pageProps }) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -46,6 +48,7 @@ function MyApp() {
         </Routes>
       </Router>
       <Analytics />
+      <Component {...pageProps} />
     </>
   );
 }
