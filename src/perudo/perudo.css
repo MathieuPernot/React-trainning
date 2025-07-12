@@ -23,14 +23,22 @@
 .perudo-btn {
   background: var(--perudo-main);
   color: var(--perudo-black);
-  border-radius: var(--perudo-radius);
-  padding: 0.75em 2em;
   border: none;
+  border-radius: 0;
+  padding: 2.5rem 4.5rem 2.5rem 4.5rem;
   font-weight: bold;
   font-family: var(--perudo-font);
-  transition: background 0.2s, color 0.2s;
+  font-size: 2rem;
+  text-align: center;
+  position: relative;
+  box-shadow: none;
   cursor: pointer;
+  outline: none;
+  margin: 2rem 0;
+  transition: background 0.2s, color 0.2s;
+  display: inline-block;
 }
+
 .perudo-btn:hover {
   background: var(--perudo-bonus);
   color: var(--perudo-white);
@@ -65,4 +73,127 @@
 .perudo-bonus {
   color: var(--perudo-bonus);
   font-weight: bold;
+}
+
+.perudo-dice {
+  width: 4rem;
+  height: 4rem;
+  background: var(--perudo-white);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 0;
+  position: relative;
+}
+
+.perudo-dot {
+  width: 0.9rem;
+  height: 0.9rem;
+  background: var(--perudo-black);
+  display: block;
+  margin: auto;
+  border-radius: 0;
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+.perudo-dot.inactive {
+  opacity: 0;
+}
+
+.perudo-section {
+  color: var(--perudo-white);
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto 1.5rem auto;
+  box-sizing: border-box;
+  padding: 1rem;
+  background: none;
+}
+
+@media (min-width: 600px) {
+  .perudo-section {
+    max-width: 500px;
+    padding: 2rem;
+  }
+}
+
+.perudo-bidselector-modal {
+  background: var(--perudo-grey);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 10;
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 1.5rem auto;
+  max-width: 95vw;
+  width: 100%;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.perudo-bidselector-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-bottom: 1.2rem;
+}
+
+.perudo-bidselector-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.perudo-bidselector-label {
+  font-size: 1rem;
+  margin-bottom: 0.2rem;
+}
+
+.perudo-bidselector-dice-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.perudo-bidselector-input {
+  width: 4rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  text-align: center;
+  font-size: 1.1rem;
+  background: var(--perudo-light-grey);
+  color: var(--perudo-white);
+}
+
+.perudo-bidselector-error {
+  color: #ff4d4f;
+  font-size: 0.95rem;
+  text-align: center;
+  margin-bottom: 0.7rem;
+}
+
+.perudo-bidselector-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  justify-content: center;
+}
+
+@media (min-width: 600px) {
+  .perudo-bidselector-modal {
+    max-width: 350px;
+    padding: 2rem;
+  }
+  .perudo-bidselector-fields {
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+  .perudo-bidselector-dice-row {
+    gap: 1.2rem;
+  }
 }
