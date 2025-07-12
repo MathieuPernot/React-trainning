@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Lock, Unlock, Check, X, Play, Volume2 } from 'lucide-react';
 
 // Composant WordLock
 const WordLock = () => {
+      const audioRef = useRef(null);
   // Hash SHA-256 des mots-clés (remplacez ces hashs par vos propres mots)
   const TARGET_HASHES = [
     'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', // "hello"
@@ -18,6 +19,19 @@ const WordLock = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState([false, false, false, false, false]);
 
+  // Lancer le son au chargement du composant
+  useEffect(() => {
+    if (audioRef.current) {
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          // Certains navigateurs bloquent la lecture automatique
+          // Tu peux afficher un bouton pour débloquer si besoin
+          // console.warn('Lecture audio bloquée', err);
+        });
+      }
+    }
+  }, []);
   // Fonction pour calculer le hash SHA-256
   const sha256 = async (text) => {
     const encoder = new TextEncoder();
@@ -99,6 +113,8 @@ const WordLock = () => {
 
   return (
 <div className="bg-gradient-to-br ... p-3 sm:p-4 font-serif">
+          <audio ref={audioRef} src="/fortboyard.mp3" preload="auto" loop />
+
   <div className="w-full max-w-2xl mx-auto">      {/* Animation de succès */}
       {showSuccess && (
         <div className="fixed inset-0 z-50 flex items-center p-4 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 backdrop-blur-sm">

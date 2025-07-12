@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import Ready from '../comp/Ready';
+import WordLock from '../comp/WordLock';
 
 const Digit = ({ number }) => (
   <span className="digital7 text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.9)] select-none text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem]">
@@ -8,7 +8,7 @@ const Digit = ({ number }) => (
 );
 
 const DigitalTime = ({ timeStr }) => (
-  <div className="flex space-x-4 justify-center">
+  <div className="flex justify-center space-x-4">
     {timeStr.split("").map((char, i) =>
       char === ":" ? (
         <span
@@ -75,10 +75,10 @@ const BombTimer = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-6">
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 text-white bg-black">
       {!finished ? (
         <div>
-        <h1 className=" text-red-500 select-none mb-12 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
+        <h1 className="mb-12 text-4xl text-red-500 select-none sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
         💣 CHAAAIIII 💣
          </h1>
           <DigitalTime timeStr={formatTime(timeLeft)} />
@@ -86,7 +86,7 @@ const BombTimer = () => {
         </div>
       ) :  (
         <div className="countdown-finished">
-          <Ready />
+          <WordLock />
         </div>
       )}
     </div>
