@@ -1,49 +1,90 @@
-// Countdown.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 import Ready from '../comp/Ready';
 
+const Digit = ({ number }) => (
+  <span className="digital7 text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.9)] select-none text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem]">
+    {number}
+  </span>
+);
 
-const Leak = () => {
-  const targetDate = new Date("2025-07-11T20:59:59").getTime();
+const DigitalTime = ({ timeStr }) => (
+  <div className="flex space-x-4 justify-center">
+    {timeStr.split("").map((char, i) =>
+      char === ":" ? (
+        <span
+          key={i}
+          className="digital7 text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.9)] select-none text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem]"
+        >
+          :
+        </span>
+      ) : (
+        <Digit key={i} number={char} />
+      )
+    )}
+  </div>
+);
+
+const BombTimer = () => {
+  const targetDate = new Date("2025-07-12T21:00:00").getTime();
   const [timeLeft, setTimeLeft] = useState(targetDate - Date.now());
   const [finished, setFinished] = useState(false);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      const distance = targetDate - now;
+      const diff = targetDate - now;
 
-      if (distance <= 0) {
+      if (diff <= 0) {
         clearInterval(interval);
         setFinished(true);
       } else {
-        setTimeLeft(distance);
+        setTimeLeft(diff);
       }
     }, 1000);
 
     return () => clearInterval(interval);
   }, [targetDate]);
 
-  const getTimeParts = (milliseconds) => {
-    const days = Math.floor(milliseconds / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((milliseconds % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
+  // Lecture automatique si possible
+  useEffect(() => {
+    if (audioRef.current) {
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            // Lecture OK
+          })
+          .catch((error) => {
+            console.warn("Lecture audio bloquée par le navigateur", error);
+          });
+      }
+    }
+  }, []);
 
-    return { days, hours, minutes, seconds };
+  const formatTime = (ms) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const h = Math.floor(totalSeconds / 3600)
+      .toString()
+      .padStart(2, "0");
+    const m = Math.floor((totalSeconds % 3600) / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = (totalSeconds % 60).toString().padStart(2, "0");
+    return `${h}:${m}:${s}`;
   };
 
-  const { days, hours, minutes, seconds } = getTimeParts(timeLeft);
-
   return (
-    <div className="countdown-container">
-      <h1 className="countdown-title">Compte à rebours</h1>
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-6">
       {!finished ? (
-        <div className="countdown-box">
-          {hours}h {minutes}m {seconds}s
-          <Ready />
+        <div>
+        <h1 className=" text-red-500 select-none mb-12 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
+        💣 CHAAAIIII 💣
+         </h1>
+          <DigitalTime timeStr={formatTime(timeLeft)} />
+          <audio ref={audioRef} src="/theme.mp3" preload="auto" autoPlay loop />
         </div>
-      ) : (
+      ) :  (
         <div className="countdown-finished">
           <Ready />
         </div>
@@ -52,4 +93,4 @@ const Leak = () => {
   );
 };
 
-export default Leak;
+export default BombTimer;

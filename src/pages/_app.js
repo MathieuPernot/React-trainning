@@ -6,6 +6,8 @@ import '../styles/gaben.css';
 import '../styles/samule.css';
 import '../perudo/perudo.css';
 import '../styles/leak.css';
+import '../styles/font.css';
+
 
 import { Analytics } from "@vercel/analytics/react"
 

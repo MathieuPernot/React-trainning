@@ -10,25 +10,15 @@ const App = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [gameWidth, setGameWidth] = useState(0);
   const [gameHeight, setGameHeight] = useState(0);
-
   const ballSize = 50;
   const paddleWidth = 100;
   const paddleHeight = 10;
-
   const [isTouching, setIsTouching] = useState(false);
   const [isBallInitialized, setIsBallInitialized] = useState(false);
-
-
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
-
-
   const [currentImage, setCurrentImage] = useState(null);
-
   const [showImage, setShowImage] = useState(false);
-
-
   const [dvdBouncers, setDvdBouncers] = useState([]);
-
 
   useEffect(() => {
     const bouncersCount = Math.floor(score / 2);
@@ -55,19 +45,16 @@ const App = () => {
       setShowImage(true);
     } else {
 
-
       if (showImage) {
         setShowImage(false);
       }
       return;
     }
 
-
     if (showImage) {
       const timer = setTimeout(() => {
         setShowImage(false);
       }, 500);
-
 
       return () => clearTimeout(timer);
     }
@@ -107,7 +94,6 @@ const App = () => {
       setIsBallInitialized(true);
     }
   }, [gameWidth, gameHeight, isBallInitialized]);
-
 
   const moveBall = () => {
     setBallPos((prev) => {
@@ -164,8 +150,6 @@ const App = () => {
     });
   };
   
-
-
   const randomBallStart = () => {
     const safeWidth = Math.max(gameWidth, ballSize);
     const safeHeight = Math.max(gameHeight, ballSize);
@@ -176,7 +160,6 @@ const App = () => {
     const randomDy = Math.random() > 0.5 ? 2 : -2;
     return { x: randomX, y: randomY, dx: randomDx, dy: randomDy };
   };
-
 
   useEffect(() => {
     window.addEventListener('mousemove', handleMouseMove);
@@ -199,11 +182,9 @@ const App = () => {
     setPaddlePos(newPos);
   };
 
-
   const handleTouchStart = (event) => {
     event.preventDefault();
   };
-
 
   const handleTouchEnd = () => {
   };
@@ -317,7 +298,6 @@ const App = () => {
       </div>
 
       <div className="rainbow-text">WOOOO LE GAMING</div>
-
       <div className="container2">
         <div className="button-container">
           <Link to="/test">
@@ -326,7 +306,7 @@ const App = () => {
         </div>
         <div className="button-container">
           <Link to="/samule">
-            <button className='boutton'>Samule</button>
+            <button className='boutton'> Trouve le samule</button>
           </Link>
         </div>
         <div className="button-container">
