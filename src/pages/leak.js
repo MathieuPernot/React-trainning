@@ -25,7 +25,7 @@ const DigitalTime = ({ timeStr }) => (
 );
 
 const BombTimer = () => {
-  const targetDate = new Date("2025-07-12T21:00:00").getTime();
+  const targetDate = new Date("2025-07-13T21:00:00").getTime();
   const [timeLeft, setTimeLeft] = useState(targetDate - Date.now());
   const [finished, setFinished] = useState(false);
   const audioRef = useRef(null);
