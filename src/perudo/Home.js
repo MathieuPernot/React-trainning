@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Game from './components/Game';
+import Button from './components/Button';
 import { resetGame, checkRoomExists, joinRoom, subscribeToGame } from './backend/gameService';
 
 const Home = () => {
@@ -81,29 +82,19 @@ const Home = () => {
             <h1 className="perudo-title mb-8">Perudo Game</h1>
             <div className="flex flex-col gap-4">
                 {!roomExists ? (
-                    <button
+                    <Button
                         onClick={handleBecomeHost}
                         disabled={isLoading}
-                        className={`px-4 py-2 rounded ${
-                            isLoading 
-                                ? 'bg-gray-600 cursor-not-allowed'
-                                : 'bg-purple-600 hover:bg-purple-700'
-                        }`}
                     >
                         {isLoading ? 'Initialisation...' : 'Créer une partie'}
-                    </button>
+                    </Button>
                 ) : (
-                    <button
+                    <Button
                         onClick={handleJoinGame}
                         disabled={isLoading}
-                        className={`px-4 py-2 rounded ${
-                            isLoading 
-                                ? 'bg-gray-600 cursor-not-allowed'
-                                : 'bg-green-600 hover:bg-green-700'
-                        }`}
                     >
                         {isLoading ? 'Connexion...' : 'Rejoindre la partie'}
-                    </button>
+                    </Button>
                 )}
             </div>
             {error && (

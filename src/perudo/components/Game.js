@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Button from './Button';
 import {
   subscribeToGame,
   joinRoom,
@@ -10,6 +11,9 @@ import {
   checkRoomExists,
   disconnectPlayer
 } from '../backend/gameService';
+import DiceContainer from './DiceContainer';
+import Dice from './Dice';
+import BidSelector from './BidSelector';
 
 // Composant pour le formulaire de connexion
 const LoginForm = ({ onSubmit, initialName }) => {
@@ -35,12 +39,12 @@ const LoginForm = ({ onSubmit, initialName }) => {
           required
           autoFocus
         />
-        <button 
-          type="submit" 
-          className="w-full p-2 bg-purple-600 rounded hover:bg-purple-700"
+        <Button 
+          type="submit"
+          className="w-full"
         >
           Rejoindre
-        </button>
+        </Button>
       </form>
     </div>
   );
@@ -58,12 +62,11 @@ const WaitingRoom = ({ players = [], isHost, onStartGame }) => (
       ))}
     </div>
     {isHost && Array.isArray(players) && players.length >= 2 && (
-      <button
+      <Button
         onClick={onStartGame}
-        className="p-2 bg-green-600 rounded hover:bg-green-700"
       >
         Démarrer la partie
-      </button>
+      </Button>
     )}
   </div>
 );
@@ -102,6 +105,7 @@ const isValidBid = (currentBid, lastBid) => {
 
 // Composant pour le plateau de jeu
 const GameBoard = ({ gameState, playerId, onPlaceBid, onDudo, onReset }) => {
+  const [showBidSelector, setShowBidSelector] = useState(false);
   const [bidValue, setBidValue] = useState(2);
   const [bidCount, setBidCount] = useState(1);
   const [bidError, setBidError] = useState('');
@@ -150,86 +154,45 @@ const GameBoard = ({ gameState, playerId, onPlaceBid, onDudo, onReset }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 text-white bg-gray-900">
+    <div className="perudo-section" style={{position: 'relative'}}>
       <div className="mb-8">
         <h2 className="mb-4 text-xl">Tour {gameState.round || 1}</h2>
-        <div className="text-sm text-gray-400 mb-2">
+        <div className="text-sm mb-2">
           Total des dés en jeu: {totalDice}
         </div>
         {gameState.lastBid && (
-          <div className="mb-4 p-2 bg-gray-800 rounded">
+          <div className="mb-4 p-2 rounded">
             Dernière enchère: {gameState.lastBid.diceCount} × {gameState.lastBid.diceValue}
           </div>
         )}
       </div>
-
       <div className="mb-8">
         <h3 className="mb-2 text-lg">Vos dés:</h3>
-        <div className="flex gap-2">
-          {Array.isArray(currentPlayer.dice) && currentPlayer.dice.map((value, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-center w-10 h-10 text-black bg-white rounded"
-            >
-              {value}
-            </div>
-          ))}
-        </div>
+        <DiceContainer diceList={currentPlayer.dice || []} />
       </div>
 
       {isCurrentTurn && (
         <div className="flex flex-col items-center gap-4">
           <div className="flex gap-4">
-            <div className="flex flex-col items-center">
-              <label className="mb-1 text-sm">Valeur du dé</label>
-              <input
-                type="number"
-                min="1"
-                max="6"
-                value={bidValue}
-                onChange={(e) => {
-                  setBidValue(parseInt(e.target.value) || 1);
-                  setBidError('');
-                }}
-                className="w-20 p-2 bg-gray-800 rounded text-center"
-              />
-            </div>
-            <div className="flex flex-col items-center">
-              <label className="mb-1 text-sm">Nombre de dés</label>
-              <input
-                type="number"
-                min="1"
-                max={totalDice}
-                value={bidCount}
-                onChange={(e) => {
-                  setBidCount(parseInt(e.target.value) || 1);
-                  setBidError('');
-                }}
-                className="w-20 p-2 bg-gray-800 rounded text-center"
-              />
-            </div>
-          </div>
-          {bidError && (
-            <div className="text-red-500 text-sm text-center">
-              {bidError}
-            </div>
-          )}
-          <div className="flex gap-4">
-            <button
-              onClick={validateAndPlaceBid}
-              className="p-2 bg-blue-600 rounded hover:bg-blue-700"
-            >
-              Enchérir
-            </button>
+            <Button onClick={() => setShowBidSelector(true)}>Enchérir</Button>
             {gameState.lastBid && (
-              <button
-                onClick={onDudo}
-                className="p-2 bg-red-600 rounded hover:bg-red-700"
-              >
-                Dudo!
-              </button>
+              <Button onClick={() => {
+                setShowBidSelector(false);
+                onDudo();
+              }}>Dudo!</Button>
             )}
           </div>
+          {showBidSelector && (
+            <BidSelector
+              lastBid={gameState.lastBid}
+              totalDice={totalDice}
+              onValidate={(value, count) => {
+                onPlaceBid(value, count);
+                setShowBidSelector(false);
+              }}
+              onCancel={() => setShowBidSelector(false)}
+            />
+          )}
         </div>
       )}
 
@@ -246,12 +209,12 @@ const GameBoard = ({ gameState, playerId, onPlaceBid, onDudo, onReset }) => {
       </div>
 
       {gameState.status === 'finished' && gameState.hostId === playerId && (
-        <button
+        <Button
           onClick={onReset}
-          className="mt-8 p-2 bg-green-600 rounded hover:bg-green-700"
+          className="mt-8"
         >
           Nouvelle partie
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -265,6 +228,8 @@ export default function Game() {
   const [error, setError] = useState(null);
   const [isHost] = useState(() => localStorage.getItem('perudoIsHost') === 'true');
   const [gameEndMessage, setGameEndMessage] = useState('');
+  const [timer, setTimer] = useState(null);
+  const TURN_TIMEOUT = 30000; // 30 secondes
 
   // Gérer la déconnexion quand le composant est démonté ou la fenêtre est fermée
   useEffect(() => {
@@ -283,6 +248,50 @@ export default function Game() {
       }
     };
   }, [playerId]);
+
+  // Effet pour gérer le timer du tour
+  useEffect(() => {
+    if (!gameState || gameState.status !== 'playing') {
+      if (timer) {
+        clearTimeout(timer);
+        setTimer(null);
+      }
+      return;
+    }
+
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    
+    // Si c'est le tour du joueur actuel, démarrer le timer
+    if (currentPlayer && currentPlayer.id === playerId) {
+      // Nettoyer l'ancien timer si il existe
+      if (timer) {
+        clearTimeout(timer);
+      }
+      
+      // Créer un nouveau timer
+      const newTimer = setTimeout(async () => {
+        try {
+          // Si c'est le premier tour, placer une enchère aléatoire
+          if (!gameState.lastBid) {
+            const randomValue = Math.floor(Math.random() * 6) + 1;
+            await handlePlaceBid(randomValue, 1);
+          } else {
+            // Sinon, faire un Dudo
+            await handleDudo();
+          }
+        } catch (error) {
+          console.error('Erreur lors du timeout:', error);
+        }
+      }, TURN_TIMEOUT);
+      
+      setTimer(newTimer);
+      
+      // Nettoyer le timer quand le composant est démonté ou quand le tour change
+      return () => {
+        clearTimeout(newTimer);
+      };
+    }
+  }, [gameState?.currentPlayerIndex, playerId, gameState?.status]);
 
   useEffect(() => {
     // Récupérer l'ID et le nom du joueur du localStorage
@@ -470,13 +479,13 @@ export default function Game() {
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
         <h2 className="text-3xl font-bold mb-8">{gameEndMessage}</h2>
         <div className="flex gap-4">
-          <button
+          <Button
             onClick={handleResetGame}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded"
             disabled={isLoading}
+            className="px-4 py-2"
           >
             {isLoading ? 'Réinitialisation...' : 'Nouvelle Partie'}
-          </button>
+          </Button>
         </div>
         {error && (
           <div className="mt-4 text-red-500">
