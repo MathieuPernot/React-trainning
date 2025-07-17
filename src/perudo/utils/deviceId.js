@@ -34,6 +34,21 @@ const getDeviceFingerprint = () => {
     return simpleHash(combined);
 };
 
+// Génère un ID aléatoire sécurisé
+const generateSecureRandomId = () => {
+    // Utiliser crypto.getRandomValues si disponible, sinon Math.random avec plus d'entropie
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+        const array = new Uint32Array(2);
+        window.crypto.getRandomValues(array);
+        return array[0].toString(36) + array[1].toString(36);
+    } else {
+        // Fallback avec plus d'entropie
+        return Math.random().toString(36).substring(2) + 
+               Math.random().toString(36).substring(2) + 
+               Date.now().toString(36);
+    }
+};
+
 // Génère ou récupère un ID de device persistant
 export const getDeviceId = () => {
     const STORAGE_KEY = 'perudo_device_id';
@@ -42,10 +57,13 @@ export const getDeviceId = () => {
     let deviceId = localStorage.getItem(STORAGE_KEY);
     
     if (!deviceId) {
-        // Créer un nouvel ID basé sur le fingerprint + timestamp
+        // Créer un nouvel ID avec plus d'entropie
         const fingerprint = getDeviceFingerprint();
         const timestamp = Date.now().toString(36);
-        deviceId = `device_${fingerprint}_${timestamp}`;
+        const randomId = generateSecureRandomId();
+        const sessionId = Math.random().toString(36).substring(2);
+        
+        deviceId = `device_${fingerprint}_${timestamp}_${randomId}_${sessionId}`;
         
         // Sauvegarder dans localStorage
         localStorage.setItem(STORAGE_KEY, deviceId);
@@ -58,7 +76,10 @@ export const getDeviceId = () => {
 export const generatePlayerId = (playerName) => {
     const deviceId = getDeviceId();
     const nameHash = simpleHash(playerName.toLowerCase());
-    return `${deviceId}_${nameHash}`;
+    const sessionRandom = Math.random().toString(36).substring(2);
+    const microTime = (Date.now() + Math.random()).toString(36);
+    
+    return `${deviceId}_${nameHash}_${sessionRandom}_${microTime}`;
 };
 
 // Récupère le nom du joueur sauvegardé pour ce device
@@ -69,5 +90,27 @@ export const getSavedPlayerName = () => {
 // Sauvegarde le nom du joueur pour ce device
 export const savePlayerName = (name) => {
     localStorage.setItem('perudo_player_name', name);
+};
+
+// Force la génération d'un nouvel ID (en cas de collision)
+export const forceNewDeviceId = () => {
+    const STORAGE_KEY = 'perudo_device_id';
+    localStorage.removeItem(STORAGE_KEY);
+    return getDeviceId(); // Génère un nouvel ID
+};
+
+// Debug: obtenir les informations détaillées de l'ID
+export const getDeviceIdInfo = () => {
+    const deviceId = getDeviceId();
+    const parts = deviceId.split('_');
+    
+    return {
+        fullId: deviceId,
+        fingerprint: parts[1],
+        timestamp: parts[2] ? parseInt(parts[2], 36) : null,
+        timestampDate: parts[2] ? new Date(parseInt(parts[2], 36)) : null,
+        randomPart: parts[3],
+        sessionPart: parts[4]
+    };
 };
 

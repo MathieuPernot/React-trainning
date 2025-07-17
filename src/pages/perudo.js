@@ -1,6 +1,6 @@
 import React from 'react';
-import Perudo from '../perudo/Home';
+import NewHome from '../perudo/NewHome';
 
 export default function PerudoPage() {
-  return <Perudo />;
+  return <NewHome />;
 }

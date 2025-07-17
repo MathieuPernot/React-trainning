@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { generatePlayerId, getSavedPlayerName, savePlayerName } from '../utils/deviceId';
+import { generatePlayerId, getSavedPlayerName, savePlayerName, forceNewDeviceId, getDeviceIdInfo } from '../utils/deviceId';
 
 const PlayerContext = createContext();
 
@@ -61,6 +61,21 @@ export const PlayerProvider = ({ children }) => {
       setPlayerId(null);
       setPlayerName('');
       setIsConnected(false);
+    },
+
+    // Forcer un nouvel ID en cas de collision
+    forceNewId: (name) => {
+      console.log('🔄 Forcing new device ID due to collision');
+      forceNewDeviceId(); // Supprime l'ancien ID du localStorage
+      const newId = generatePlayerId(name || playerName);
+      setPlayerId(newId);
+      console.log('✅ New ID generated:', newId);
+      return newId;
+    },
+
+    // Debug: obtenir les informations d'ID
+    getIdInfo: () => {
+      return getDeviceIdInfo();
     }
   };
 

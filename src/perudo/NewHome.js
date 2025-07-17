@@ -17,7 +17,7 @@ const PlayerConnection = () => {
   const { joinOrCreateLobby } = useGameActions();
   const { isLoading, error, actions: gameActions } = useGame();
 
-  const handleConnect = async () => {
+  const handleConnect = async (retryCount = 0) => {
     if (!playerName.trim()) {
       gameActions.setError('Veuillez entrer votre nom');
       return;
@@ -31,6 +31,28 @@ const PlayerConnection = () => {
       });
     } catch (error) {
       console.error('Connection error:', error);
+      
+      // Gérer automatiquement les collisions d'ID
+      if (error.message === 'ID_COLLISION_RETRY_NEEDED' && retryCount < 3) {
+        console.log(`🔄 Retrying connection with new ID (attempt ${retryCount + 1})`);
+        
+        // Forcer un nouvel ID et réessayer
+        const newId = playerActions.forceNewId(playerName.trim());
+        
+        try {
+          await joinOrCreateLobby({
+            id: newId,
+            name: playerName.trim()
+          });
+        } catch (retryError) {
+          if (retryCount < 2) {
+            // Réessayer une fois de plus
+            await handleConnect(retryCount + 1);
+          } else {
+            gameActions.setError('Impossible de se connecter après plusieurs tentatives. Veuillez rafraîchir la page.');
+          }
+        }
+      }
     }
   };
 
@@ -62,6 +84,20 @@ const PlayerConnection = () => {
             Entrez votre nom pour rejoindre automatiquement<br />
             le lobby existant ou en créer un nouveau
           </div>
+          
+          {/* Debug button (only in development) */}
+          {process.env.NODE_ENV === 'development' && (
+            <button
+              onClick={() => {
+                const info = playerActions.getIdInfo();
+                console.log('🔍 Device ID Info:', info);
+                alert(`Device ID: ${info.fullId}\nTimestamp: ${info.timestampDate}`);
+              }}
+              className="text-xs text-gray-500 hover:text-gray-300"
+            >
+              Debug ID Info
+            </button>
+          )}
         </div>
         {error && <ErrorDisplay error={error} onClose={() => gameActions.setError(null)} />}
       </div>

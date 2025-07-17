@@ -12,7 +12,7 @@ export const useGameActions = () => {
   const { playerId } = usePlayer();
 
   // Créer ou rejoindre un lobby
-  const joinOrCreateLobby = useCallback(async (player) => {
+  const joinOrCreateLobby = useCallback(async (player, onIdCollision = null) => {
     try {
       actions.setLoading(true);
       actions.setError(null);
@@ -25,6 +25,18 @@ export const useGameActions = () => {
         console.log('✅ [useGameActions] Successfully joined existing game');
         return updatedGameData;
       } catch (error) {
+        // Gérer la collision d'ID
+        if (error.message.includes('Collision d\'ID détectée')) {
+          console.warn('⚠️ [useGameActions] ID collision detected');
+          
+          if (onIdCollision) {
+            // Callback pour gérer la collision depuis le composant
+            throw new Error('ID_COLLISION_RETRY_NEEDED');
+          } else {
+            throw new Error('Collision d\'ID détectée. Veuillez rafraîchir la page et réessayer.');
+          }
+        }
+        
         // Si aucune partie n'existe, en créer une nouvelle
         if (error.message === 'Aucune partie trouvée') {
           console.log('🏗️ [useGameActions] Creating new game');

@@ -36,7 +36,18 @@ export const addPlayerToGame = async (player) => {
     throw new Error('Aucune partie trouvée');
   }
   
-  // Vérifier si le joueur existe déjà
+  // Vérifier s'il y a collision d'ID
+  const existingPlayerWithSameId = gameData.players.find(p => p.id === player.id);
+  if (existingPlayerWithSameId && existingPlayerWithSameId.name.toLowerCase() !== player.name.toLowerCase()) {
+    console.warn('⚠️ ID collision detected! Same ID for different players:', {
+      existing: existingPlayerWithSameId.name,
+      new: player.name,
+      id: player.id
+    });
+    throw new Error('Collision d\'ID détectée. Veuillez rafraîchir la page et réessayer.');
+  }
+  
+  // Vérifier si le joueur existe déjà (reconnexion)
   const existingPlayerIndex = gameData.players.findIndex(p => 
     p.id === player.id || p.name.toLowerCase() === player.name.toLowerCase()
   );
