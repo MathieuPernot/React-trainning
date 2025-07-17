@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import dynamic from 'next/dynamic';
+import PropTypes from 'prop-types';
 
-const Ready = dynamic(() => import('../comp/Ready'), { ssr: false });
+const WordLock = dynamic(() => import('../comp/WordLock'), { ssr: false });
 
 const Digit = ({ number }) => (
   <span className="digital7 text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.9)] select-none text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem]">
@@ -83,6 +84,14 @@ const BombTimer = () => {
       )}
     </div>
   );
+};
+
+Digit.propTypes = {
+  number: PropTypes.string.isRequired,
+};
+
+DigitalTime.propTypes = {
+  timeStr: PropTypes.string.isRequired,
 };
 
 export default BombTimer;

@@ -1,5 +1,5 @@
 // src/firebase/gameService.js
-import { collection, doc, getDoc, setDoc, updateDoc, onSnapshot, arrayUnion, arrayRemove, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, onSnapshot, arrayUnion, deleteDoc } from 'firebase/firestore';
 import db from './config';
 
 const GAME_COLLECTION = 'games';
@@ -103,7 +103,7 @@ export const disconnectPlayer = async (playerId) => {
 };
 
 // Démarrer la partie
-export const startGame = async (playerIds) => {
+export const startGame = async () => {
     const roomRef = doc(db, GAME_COLLECTION, ROOM_ID);
     const roomDoc = await getDoc(roomRef);
 

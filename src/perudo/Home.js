@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Game from './components/Game';
 import Button from './components/Button';
-import { resetGame, checkRoomExists, joinRoom, subscribeToGame } from './backend/gameService';
+import { resetGame, checkRoomExists, subscribeToGame } from './backend/gameService';
 
 const Home = () => {
     const [showGame, setShowGame] = useState(false);

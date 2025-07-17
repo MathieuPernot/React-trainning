@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Lock, Unlock, Check, X, Play, Volume2 } from 'lucide-react';
+import { Lock, Unlock, Check, X } from 'lucide-react';
 
 // Composant WordLock
 const WordLock = () => {
@@ -24,10 +24,10 @@ const WordLock = () => {
     if (audioRef.current) {
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
-        playPromise.catch((err) => {
+        playPromise.catch(() => {
           // Certains navigateurs bloquent la lecture automatique
           // Tu peux afficher un bouton pour débloquer si besoin
-          // console.warn('Lecture audio bloquée', err);
+          // console.warn('Lecture audio bloquée');
         });
       }
     }
@@ -112,10 +112,10 @@ const WordLock = () => {
   };
 
   return (
-<div className="bg-gradient-to-br ... p-3 sm:p-4 font-serif">
-          <audio ref={audioRef} src="/fortboyard.mp3" preload="auto" loop />
+    <div className="bg-gradient-to-br from-amber-900 to-orange-900 min-h-screen flex items-center justify-center p-3 sm:p-4 font-serif">
+      <audio ref={audioRef} src="/fortboyard.mp3" preload="auto" loop />
 
-  <div className="w-full max-w-2xl mx-auto">      {/* Animation de succès */}
+      {/* Animation de succès */}
       {showSuccess && (
         <div className="fixed inset-0 z-50 flex items-center p-4 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 backdrop-blur-sm">
           <div className="w-full max-w-sm p-4 transform border-4 border-yellow-400 shadow-2xl sm:p-8 bg-gradient-to-br from-yellow-900 to-orange-900 rounded-2xl animate-pulse">
@@ -260,8 +260,6 @@ const WordLock = () => {
         </div>
       </div>
     </div>
-    </div>
-    
   );
 };
 

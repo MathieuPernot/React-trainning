@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DVDBouncer from '../comp/DVDBouncer';
 
@@ -13,9 +13,7 @@ const App = () => {
   const ballSize = 50;
   const paddleWidth = 100;
   const paddleHeight = 10;
-  const [isTouching, setIsTouching] = useState(false);
   const [isBallInitialized, setIsBallInitialized] = useState(false);
-  const [speedMultiplier, setSpeedMultiplier] = useState(1);
   const [currentImage, setCurrentImage] = useState(null);
   const [showImage, setShowImage] = useState(false);
   const [dvdBouncers, setDvdBouncers] = useState([]);
@@ -141,7 +139,6 @@ const App = () => {
         }
         setLeaderboard(newLeaderboard);
         setScore(0);
-        setSpeedMultiplier(1);
         setDvdBouncers([]);
         return randomBallStart();  // Repartir avec une nouvelle balle au départ
       }
@@ -322,7 +319,7 @@ const App = () => {
         </div>
       <div className="button-container">
         <Link to="/leak">
-          <button className="boutton button-leak"> Laisse feur c'est bien</button>
+          <button className="boutton button-leak"> Laisse feur c&apos;est bien</button>
         </Link>
       </div>
 

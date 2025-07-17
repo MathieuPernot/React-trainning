@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 
 const TestPage = () => {
   const [showPopup, setShowPopup] = useState(false);
-  const [showPopup2, setShowPopup2] = useState(false);
 
   return (
     <div className="profile-container">
@@ -19,7 +18,7 @@ const TestPage = () => {
             </div>
             <div className="item-center">
               <h1>Bienvenue sur le Profil de Xx_TomBartix_xX</h1>
-            <p className="profile-tagline">"Je suis le plus cool des cools"</p>
+            <p className="profile-tagline">&quot;Je suis le plus cool des cools&quot;</p>
             </div>
           </div>
       </header>
@@ -39,7 +38,7 @@ const TestPage = () => {
         <h3>Mes derniers articles :</h3>
         <div className="article-preview">
           <h4>Ma dernière aventure !</h4>
-          <p>Je vous raconte mon dernier vlog, c'était incroyable !</p> 
+          <p>Je vous raconte mon dernier vlog, c&apos;était incroyable !</p> 
           <button
               className="popupbouton"
               onClick={() => window.open("https://www.youtube.com/watch?v=J0gss-Zavmo", "_blank")}

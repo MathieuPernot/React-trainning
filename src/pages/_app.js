@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react';
 import '../styles/App.css';
 import '../styles/test.css';
 import '../styles/globals.css';
@@ -8,11 +9,8 @@ import '../perudo/perudo.css';
 import '../styles/leak.css';
 import '../styles/font.css';
 
-
 import { Analytics } from "@vercel/analytics/react"
-
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 
 import Home from './index';
 import About from './test';

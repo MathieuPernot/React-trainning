@@ -1,5 +1,5 @@
-// ../comp/DVDBouncer.jsx
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 
 export default function DVDBouncer({ containerWidth, containerHeight }) {
   const [position, setPosition] = useState({ x: 50, y: 50 });
@@ -115,3 +115,8 @@ export default function DVDBouncer({ containerWidth, containerHeight }) {
     </div>
   );
 }
+
+DVDBouncer.propTypes = {
+  containerWidth: PropTypes.number.isRequired,
+  containerHeight: PropTypes.number.isRequired,
+};
