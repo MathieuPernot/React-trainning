@@ -11,10 +11,14 @@ const checkHostTimeout = async (gameData, roomRef) => {
     const now = new Date();
     const hostLastSeen = gameData.hostLastSeen?.toDate?.() || gameData.hostLastSeen;
     
-    if (hostLastSeen && (now - hostLastSeen) > HOST_TIMEOUT) {
+    if (hostLastSeen && (now - new Date(hostLastSeen)) > HOST_TIMEOUT) {
         // Le créateur n'est pas actif depuis plus d'1 minute
         console.log('Host timeout detected, deleting room');
-        await deleteDoc(roomRef);
+        try {
+            await deleteDoc(roomRef);
+        } catch (error) {
+            console.error('Error deleting room on host timeout:', error);
+        }
         throw new Error('La partie a été annulée car le créateur n\'est plus actif');
     }
 };
@@ -74,34 +78,45 @@ export const setPlayerReady = async (playerId, isReady = true) => {
 
 // Fonction pour envoyer un heartbeat (maintenir la connexion)
 export const sendHeartbeat = async (playerId) => {
-    const roomRef = doc(db, GAME_COLLECTION, ROOM_ID);
-    const roomDoc = await getDoc(roomRef);
+    try {
+        const roomRef = doc(db, GAME_COLLECTION, ROOM_ID);
+        const roomDoc = await getDoc(roomRef);
 
-    if (!roomDoc.exists()) {
-        return { success: false, message: 'Partie non trouvée' };
+        if (!roomDoc.exists()) {
+            return { success: false, message: 'Partie non trouvée' };
+        }
+
+        const gameData = roomDoc.data();
+        const now = new Date();
+        
+        // Vérifier si le joueur existe encore dans la partie
+        const playerExists = gameData.players.some(p => p.id === playerId);
+        if (!playerExists) {
+            return { success: false, message: 'Joueur non trouvé dans la partie' };
+        }
+        
+        const updatedPlayers = gameData.players.map(p => 
+            p.id === playerId 
+                ? { ...p, lastSeen: now, isConnected: true }
+                : p
+        );
+
+        // Mettre à jour hostLastSeen si c'est le créateur
+        const updateData = {
+            players: updatedPlayers,
+            lastUpdate: now
+        };
+
+        if (gameData.createdBy === playerId) {
+            updateData.hostLastSeen = now;
+        }
+
+        await updateDoc(roomRef, updateData);
+        return { success: true };
+    } catch (error) {
+        console.error('Error sending heartbeat:', error);
+        return { success: false, error: error.message };
     }
-
-    const gameData = roomDoc.data();
-    const now = new Date();
-    
-    const updatedPlayers = gameData.players.map(p => 
-        p.id === playerId 
-            ? { ...p, lastSeen: now }
-            : p
-    );
-
-    // Mettre à jour hostLastSeen si c'est le créateur
-    const updateData = {
-        players: updatedPlayers,
-        lastUpdate: now
-    };
-
-    if (gameData.createdBy === playerId) {
-        updateData.hostLastSeen = now;
-    }
-
-    await updateDoc(roomRef, updateData);
-    return { success: true };
 };
 
 // Vérifie si une room existe
@@ -164,7 +179,13 @@ export const joinRoom = async (player) => {
     console.log('🔍 [joinRoom] Current players:', roomData.players.map(p => p.name));
     
     // Vérifier si le créateur est toujours actif
-    await checkHostTimeout(roomData, roomRef);
+    // Vérifier si le créateur de la partie est toujours actif
+    try {
+        await checkHostTimeout(roomData, roomRef);
+    } catch (error) {
+        // Si le host a timeout, propager l'erreur
+        throw error;
+    }
     
     // Chercher si un joueur avec le même nom existe déjà
     const existingPlayer = roomData.players.find(p => p.name.toLowerCase() === player.name.toLowerCase());
@@ -220,74 +241,95 @@ export const joinRoom = async (player) => {
 
 // Déconnexion d'un joueur
 export const disconnectPlayer = async (playerId) => {
-    const roomRef = doc(db, GAME_COLLECTION, ROOM_ID);
-    const roomDoc = await getDoc(roomRef);
+    try {
+        const roomRef = doc(db, GAME_COLLECTION, ROOM_ID);
+        const roomDoc = await getDoc(roomRef);
 
-    if (!roomDoc.exists()) {
-        return;
+        if (!roomDoc.exists()) {
+            return { success: true, message: 'No room exists' };
+        }
+
+        const roomData = roomDoc.data();
+        const now = new Date();
+        
+        // Marquer le joueur comme déconnecté
+        const updatedPlayers = roomData.players.map(p => 
+            p.id === playerId 
+                ? { ...p, isConnected: false, lastSeen: now }
+                : p
+        );
+
+        // Si le créateur se déconnecte, supprimer la partie
+        if (roomData.createdBy === playerId) {
+            console.log('Creator disconnecting, deleting game room');
+            await deleteDoc(roomRef);
+            return { success: true, message: 'Game deleted due to creator disconnect' };
+        }
+
+        // Si tous les joueurs sont déconnectés, supprimer la room
+        const anyConnectedPlayers = updatedPlayers.some(p => p.isConnected !== false);
+        if (!anyConnectedPlayers) {
+            console.log('All players disconnected, deleting game room');
+            await deleteDoc(roomRef);
+            return { success: true, message: 'Game deleted - all players disconnected' };
+        }
+
+        await updateDoc(roomRef, {
+            players: updatedPlayers,
+            lastUpdate: now
+        });
+        
+        return { success: true, message: 'Player disconnected successfully' };
+    } catch (error) {
+        console.error('Error disconnecting player:', error);
+        return { success: false, error: error.message };
     }
-
-    const roomData = roomDoc.data();
-    const now = new Date();
-    
-    // Marquer le joueur comme déconnecté
-    const updatedPlayers = roomData.players.map(p => 
-        p.id === playerId 
-            ? { ...p, isConnected: false, lastSeen: now }
-            : p
-    );
-
-    // Si le créateur se déconnecte, supprimer la partie
-    if (roomData.createdBy === playerId) {
-        await deleteDoc(roomRef);
-        return;
-    }
-
-    // Si tous les joueurs sont déconnectés, supprimer la room
-    const anyConnectedPlayers = updatedPlayers.some(p => p.isConnected !== false);
-    if (!anyConnectedPlayers) {
-        await deleteDoc(roomRef);
-        return;
-    }
-
-    await updateDoc(roomRef, {
-        players: updatedPlayers,
-        lastUpdate: now
-    });
 };
 
 // Fonction pour nettoyer les joueurs inactifs
 export const cleanupInactivePlayers = async () => {
-    const roomRef = doc(db, GAME_COLLECTION, ROOM_ID);
-    const roomDoc = await getDoc(roomRef);
+    try {
+        const roomRef = doc(db, GAME_COLLECTION, ROOM_ID);
+        const roomDoc = await getDoc(roomRef);
 
-    if (!roomDoc.exists()) {
-        return;
-    }
+        if (!roomDoc.exists()) {
+            return { success: true, message: 'No room to cleanup' };
+        }
 
-    const roomData = roomDoc.data();
-    const now = new Date();
-    const INACTIVE_TIMEOUT = 300000; // 5 minutes
-    
-    // Filtrer les joueurs inactifs
-    const activePlayers = roomData.players.filter(player => {
-        const lastSeen = player.lastSeen?.toDate?.() || player.lastSeen;
-        return lastSeen && (now - lastSeen) < INACTIVE_TIMEOUT;
-    });
-
-    // Si le créateur n'est plus actif, supprimer la partie
-    const creatorActive = activePlayers.some(p => p.id === roomData.createdBy);
-    if (!creatorActive) {
-        await deleteDoc(roomRef);
-        return;
-    }
-
-    // Mettre à jour avec les joueurs actifs seulement
-    if (activePlayers.length !== roomData.players.length) {
-        await updateDoc(roomRef, {
-            players: activePlayers,
-            lastUpdate: now
+        const roomData = roomDoc.data();
+        const now = new Date();
+        const INACTIVE_TIMEOUT = 300000; // 5 minutes
+        
+        // Filtrer les joueurs inactifs
+        const activePlayers = roomData.players.filter(player => {
+            const lastSeen = player.lastSeen?.toDate?.() || new Date(player.lastSeen);
+            return lastSeen && (now - lastSeen) < INACTIVE_TIMEOUT;
         });
+
+        // Si le créateur n'est plus actif, supprimer la partie
+        const creatorActive = activePlayers.some(p => p.id === roomData.createdBy);
+        if (!creatorActive) {
+            console.log('Creator inactive, deleting game room');
+            await deleteDoc(roomRef);
+            return { success: true, message: 'Game deleted due to inactive creator' };
+        }
+
+        // Mettre à jour avec les joueurs actifs seulement
+        if (activePlayers.length !== roomData.players.length) {
+            const removedPlayers = roomData.players.length - activePlayers.length;
+            console.log(`Removing ${removedPlayers} inactive players`);
+            
+            await updateDoc(roomRef, {
+                players: activePlayers,
+                lastUpdate: now
+            });
+            return { success: true, message: `Removed ${removedPlayers} inactive players` };
+        }
+        
+        return { success: true, message: 'No cleanup needed' };
+    } catch (error) {
+        console.error('Error during cleanup:', error);
+        return { success: false, error: error.message };
     }
 };
 
@@ -475,8 +517,50 @@ const isValidBid = (currentBid, lastBid, isPalifico = false) => {
     return false;
 };
 
+// Fonction de validation des entrées
+const validatePlayerId = (playerId) => {
+    if (!playerId || typeof playerId !== 'string' || playerId.trim() === '') {
+        throw new Error('ID de joueur invalide');
+    }
+};
+
+const validateBid = (bid) => {
+    if (!bid || typeof bid !== 'object') {
+        throw new Error('Enchère invalide');
+    }
+    
+    const { diceValue, diceCount } = bid;
+    
+    if (!Number.isInteger(diceValue) || diceValue < 1 || diceValue > 6) {
+        throw new Error('Valeur de dé invalide (doit être entre 1 et 6)');
+    }
+    
+    if (!Number.isInteger(diceCount) || diceCount < 1 || diceCount > 50) {
+        throw new Error('Nombre de dés invalide (doit être entre 1 et 50)');
+    }
+};
+
+const validatePlayerName = (name) => {
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+        throw new Error('Nom de joueur invalide');
+    }
+    
+    if (name.length > 20) {
+        throw new Error('Nom de joueur trop long (maximum 20 caractères)');
+    }
+    
+    // Vérifier les caractères autorisés
+    if (!/^[a-zA-Z0-9À-ſ\s-_]+$/.test(name)) {
+        throw new Error('Nom de joueur contient des caractères non autorisés');
+    }
+};
+
 // Faire une enchère
 export const placeBid = async (playerId, bid) => {
+    // Validation des entrées
+    validatePlayerId(playerId);
+    validateBid(bid);
+    
     const roomRef = doc(db, GAME_COLLECTION, ROOM_ID);
     const roomDoc = await getDoc(roomRef);
 
@@ -830,23 +914,32 @@ export const declareCalza = async (playerId) => {
 export const subscribeToGame = (callback) => {
     console.log('👂 [subscribeToGame] Setting up game listener');
     const roomRef = doc(db, GAME_COLLECTION, ROOM_ID);
-    return onSnapshot(roomRef, (doc) => {
-        if (doc.exists()) {
-            const gameData = doc.data();
-            console.log('📡 [subscribeToGame] Game data updated:', {
-                status: gameData.status,
-                players: gameData.players?.map(p => ({ name: p.name, isReady: p.isReady, isCreator: p.isCreator })) || [],
-                createdBy: gameData.createdBy
-            });
-            callback(gameData);
-        } else {
-            console.log('📡 [subscribeToGame] No game document found');
+    
+    const unsubscribe = onSnapshot(roomRef, (doc) => {
+        try {
+            if (doc.exists()) {
+                const gameData = doc.data();
+                console.log('📡 [subscribeToGame] Game data updated:', {
+                    status: gameData.status,
+                    players: gameData.players?.map(p => ({ name: p.name, isReady: p.isReady, isCreator: p.isCreator })) || [],
+                    createdBy: gameData.createdBy
+                });
+                callback(gameData);
+            } else {
+                console.log('📡 [subscribeToGame] No game document found');
+                callback(null);
+            }
+        } catch (error) {
+            console.error('❌ [subscribeToGame] Error processing game update:', error);
             callback(null);
         }
     }, (error) => {
         console.error('❌ [subscribeToGame] Error listening to game updates:', error);
-        callback(null);
+        // Ne pas appeler callback(null) ici pour éviter de perdre l'état
+        // Le composant peut gérer la reconnexion
     });
+    
+    return unsubscribe;
 };
 
 // Réinitialiser le jeu

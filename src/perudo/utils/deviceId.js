@@ -22,7 +22,6 @@ const getDeviceFingerprint = () => {
     const fingerprint = {
         userAgent: navigator.userAgent,
         language: navigator.language,
-        platform: navigator.platform,
         screenResolution: `${screen.width}x${screen.height}`,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         canvasFingerprint: canvas.toDataURL(),
@@ -71,3 +70,4 @@ export const getSavedPlayerName = () => {
 export const savePlayerName = (name) => {
     localStorage.setItem('perudo_player_name', name);
 };
+

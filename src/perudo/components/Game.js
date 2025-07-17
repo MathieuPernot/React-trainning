@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Button from './Button';
 import {
   subscribeToGame,
@@ -7,11 +7,13 @@ import {
   challengeBid,
   resetGame,
   setPlayerReady,
-  cancelGame
+  cancelGame,
+  sendHeartbeat
 } from '../backend/gameService';
 import DiceContainer from './DiceContainer';
 import Dice from './Dice';
 import BidSelector from './BidSelector';
+import ErrorBoundary from './ErrorBoundary';
 
 
 // Composant pour la salle d'attente (lobby)
@@ -127,9 +129,6 @@ const isValidBid = (currentBid, lastBid) => {
 // Composant pour le plateau de jeu
 const GameBoard = ({ gameState, playerId, onPlaceBid, onDudo, onReset }) => {
   const [showBidSelector, setShowBidSelector] = useState(false);
-  const [bidValue, setBidValue] = useState(2);
-  const [bidCount, setBidCount] = useState(1);
-  const [bidError, setBidError] = useState('');
 
   if (!gameState?.players) {
     return (
@@ -151,28 +150,6 @@ const GameBoard = ({ gameState, playerId, onPlaceBid, onDudo, onReset }) => {
     );
   }
 
-  // Validation de l'enchère avant de l'envoyer
-  const validateAndPlaceBid = () => {
-    const currentBid = { diceValue: bidValue, diceCount: bidCount };
-    
-    if (gameState.lastBid && !isValidBid(currentBid, gameState.lastBid)) {
-      if (gameState.lastBid.diceValue === 1) {
-        setBidError(`Pour sortir des Paco (1), il faut au moins ${(gameState.lastBid.diceCount * 2) + 1} dés`);
-      } else if (bidValue === 1) {
-        setBidError(`Pour passer aux Paco (1), il faut au moins ${Math.ceil(gameState.lastBid.diceCount / 2)} dés`);
-      } else if (bidValue === gameState.lastBid.diceValue && bidCount <= gameState.lastBid.diceCount) {
-        setBidError(`Avec la même valeur (${bidValue}), vous devez annoncer plus de ${gameState.lastBid.diceCount} dés`);
-      } else if (bidValue > gameState.lastBid.diceValue && bidCount < gameState.lastBid.diceCount) {
-        setBidError(`Avec une valeur supérieure (${bidValue}), vous devez annoncer au moins ${gameState.lastBid.diceCount} dés`);
-      } else if (bidValue < gameState.lastBid.diceValue && bidCount <= gameState.lastBid.diceCount) {
-        setBidError(`Avec une valeur inférieure (${bidValue}), vous devez annoncer plus de ${gameState.lastBid.diceCount} dés`);
-      }
-      return;
-    }
-
-    setBidError('');
-    onPlaceBid(bidValue, bidCount);
-  };
 
   return (
     <div className="perudo-section" style={{position: 'relative'}}>
@@ -254,65 +231,75 @@ const GameBoard = ({ gameState, playerId, onPlaceBid, onDudo, onReset }) => {
   );
 };
 
-export default function Game({ gameData: initialGameData, playerId: propPlayerId, playerName: propPlayerName }) {
+export default function Game({ gameData: initialGameData, playerId: propPlayerId }) {
   const [gameState, setGameState] = useState(initialGameData || null);
   const [playerId, setPlayerId] = useState(propPlayerId || null);
-  const [playerName, setPlayerName] = useState(propPlayerName || null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [gameEndMessage, setGameEndMessage] = useState('');
-  const [timer, setTimer] = useState(null);
-  const [heartbeatInterval, setHeartbeatInterval] = useState(null);
+  const timerRef = useRef(null);
+  const heartbeatRef = useRef(null);
+  const gameSubscriptionRef = useRef(null);
   const TURN_TIMEOUT = 30000; // 30 secondes
   const HEARTBEAT_INTERVAL = 30000; // 30 secondes
 
-  // Nettoyer les intervals au démontage
+  // Cleanup function to clear all intervals and subscriptions
+  const cleanup = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    if (heartbeatRef.current) {
+      clearInterval(heartbeatRef.current);
+      heartbeatRef.current = null;
+    }
+    if (gameSubscriptionRef.current) {
+      gameSubscriptionRef.current();
+      gameSubscriptionRef.current = null;
+    }
+  }, []);
+
+  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      // Nettoyer les intervals
-      if (heartbeatInterval) {
-        clearInterval(heartbeatInterval);
-      }
-      if (timer) {
-        clearTimeout(timer);
-      }
-    };
-  }, [heartbeatInterval, timer]);
+    return cleanup;
+  }, [cleanup]);
 
   // Gérer le heartbeat pour maintenir la connexion
   useEffect(() => {
-    if (playerId && !heartbeatInterval) {
-      const interval = setInterval(() => {
+    if (playerId && gameState?.status === 'playing') {
+      // Clear existing heartbeat
+      if (heartbeatRef.current) {
+        clearInterval(heartbeatRef.current);
+      }
+      
+      heartbeatRef.current = setInterval(() => {
         sendHeartbeat(playerId).catch(console.error);
       }, HEARTBEAT_INTERVAL);
       
-      setHeartbeatInterval(interval);
-      
-      return () => clearInterval(interval);
+      return () => {
+        if (heartbeatRef.current) {
+          clearInterval(heartbeatRef.current);
+          heartbeatRef.current = null;
+        }
+      };
     }
-  }, [playerId, heartbeatInterval, HEARTBEAT_INTERVAL]);
+  }, [playerId, gameState?.status]);
 
   // Effet pour gérer le timer du tour
   useEffect(() => {
-    if (!gameState || gameState.status !== 'playing') {
-      if (timer) {
-        clearTimeout(timer);
-        setTimer(null);
-      }
-      return;
+    // Clear existing timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
     }
 
-    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    if (!gameState || gameState.status !== 'playing') {
+      return;
+    }
     
     // Si c'est le tour du joueur actuel, démarrer le timer
     if (gameState.currentPlayer === playerId) {
-      // Nettoyer l'ancien timer si il existe
-      if (timer) {
-        clearTimeout(timer);
-      }
-      
-      // Créer un nouveau timer
-      const newTimer = setTimeout(async () => {
+      timerRef.current = setTimeout(async () => {
         try {
           // Si c'est le premier tour, placer une enchère aléatoire
           if (!gameState.lastAction || gameState.lastAction.type !== 'bid') {
@@ -324,29 +311,27 @@ export default function Game({ gameData: initialGameData, playerId: propPlayerId
           }
         } catch (error) {
           console.error('Erreur lors du timeout:', error);
+        } finally {
+          timerRef.current = null;
         }
       }, TURN_TIMEOUT);
-      
-      setTimer(newTimer);
-      
-      // Nettoyer le timer quand le composant est démonté ou quand le tour change
-      return () => {
-        clearTimeout(newTimer);
-      };
     }
-  }, [gameState?.currentPlayerIndex, playerId, gameState?.status]);
+  }, [gameState?.currentPlayer, playerId, gameState?.status, gameState?.lastAction]);
 
   useEffect(() => {
     // S'abonner aux mises à jour du jeu
     console.log('🎮 [Game] Setting up game subscription...');
-    const unsubscribe = subscribeToGame((newGameState) => {
+    gameSubscriptionRef.current = subscribeToGame((newGameState) => {
       console.log('🎮 [Game] Game state updated:', newGameState ? 'exists' : 'null');
       setGameState(newGameState);
     });
 
     return () => {
       console.log('🎮 [Game] Cleaning up game subscription');
-      unsubscribe();
+      if (gameSubscriptionRef.current) {
+        gameSubscriptionRef.current();
+        gameSubscriptionRef.current = null;
+      }
     };
   }, []);
 
@@ -365,10 +350,11 @@ export default function Game({ gameData: initialGameData, playerId: propPlayerId
   const handleStartGame = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       await startGame(playerId);
     } catch (error) {
       console.error('Erreur lors du démarrage:', error);
-      setError(error.message);
+      setError(`Impossible de démarrer: ${error.message || 'Erreur inconnue'}`);
     } finally {
       setIsLoading(false);
     }
@@ -377,10 +363,11 @@ export default function Game({ gameData: initialGameData, playerId: propPlayerId
   const handleCancelGame = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       await cancelGame(playerId);
     } catch (error) {
       console.error('Erreur lors de l\'annulation:', error);
-      setError(error.message);
+      setError(`Impossible d'annuler: ${error.message || 'Erreur inconnue'}`);
     } finally {
       setIsLoading(false);
     }
@@ -388,24 +375,37 @@ export default function Game({ gameData: initialGameData, playerId: propPlayerId
 
   const handleToggleReady = async (isReady) => {
     try {
+      setError(null);
       await setPlayerReady(playerId, isReady);
     } catch (error) {
       console.error('Erreur lors du changement de statut:', error);
-      setError(error.message);
+      setError(`Erreur: ${error.message || 'Impossible de changer le statut'}`);
     }
   };
 
   const handlePlaceBid = async (value, count) => {
-    if (!playerId) return;
+    if (!playerId) {
+      setError('Erreur: ID de joueur manquant');
+      return;
+    }
+    
+    // Validation côté client
+    if (!value || !count || value < 1 || value > 6 || count < 1) {
+      setError('Enchère invalide: valeur entre 1-6 et quantité minimale de 1');
+      return;
+    }
+    
     try {
       setIsLoading(true);
       setError(null);
       await placeBid(playerId, { diceValue: value, diceCount: count });
     } catch (error) {
       console.error('Error placing bid:', error);
-      setError(error.message);
-      if (error.message.includes('partie est terminée')) {
-        const winner = gameState.players.find(p => p.diceCount > 0);
+      const errorMessage = error.message || 'Erreur lors du placement de l\'enchère';
+      setError(errorMessage);
+      
+      if (errorMessage.includes('partie est terminée')) {
+        const winner = gameState?.players?.find(p => p.diceCount > 0);
         if (winner) {
           setGameEndMessage(`🎉 ${winner.name} a gagné la partie ! 🎉`);
         }
@@ -416,11 +416,17 @@ export default function Game({ gameData: initialGameData, playerId: propPlayerId
   };
 
   const handleDudo = async () => {
-    if (!playerId) return;
+    if (!playerId) {
+      setError('Erreur: ID de joueur manquant');
+      return;
+    }
+    
     try {
+      setError(null);
       await challengeBid(playerId);
     } catch (error) {
       console.error('Erreur lors du Dudo:', error);
+      setError(`Erreur lors du challenge: ${error.message || 'Action impossible'}`);
     }
   };
 
@@ -476,14 +482,31 @@ export default function Game({ gameData: initialGameData, playerId: propPlayerId
     const isCreator = gameState.createdBy === playerId;
     console.log('🎮 [Game] Showing lobby, isCreator:', isCreator);
     return (
-      <WaitingRoom
-        players={gameState.players || []}
-        isCreator={isCreator}
-        playerId={playerId}
-        onStartGame={handleStartGame}
-        onCancel={handleCancelGame}
-        onToggleReady={handleToggleReady}
-      />
+      <ErrorBoundary onRetry={() => window.location.reload()}>
+        <WaitingRoom
+          players={gameState.players || []}
+          isCreator={isCreator}
+          playerId={playerId}
+          onStartGame={handleStartGame}
+          onCancel={handleCancelGame}
+          onToggleReady={handleToggleReady}
+        />
+        {error && (
+          <div className="fixed bottom-4 left-4 right-4 p-4 bg-red-900 text-white rounded-lg shadow-lg">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <strong>Erreur:</strong> {error}
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="ml-2 text-red-200 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+      </ErrorBoundary>
     );
   }
 
@@ -511,12 +534,29 @@ export default function Game({ gameData: initialGameData, playerId: propPlayerId
 
   // Afficher le plateau de jeu
   return (
-    <GameBoard
-      gameState={gameState}
-      playerId={playerId}
-      onPlaceBid={handlePlaceBid}
-      onDudo={handleDudo}
-      onReset={handleResetGame}
-    />
+    <ErrorBoundary onRetry={() => window.location.reload()}>
+      <GameBoard
+        gameState={gameState}
+        playerId={playerId}
+        onPlaceBid={handlePlaceBid}
+        onDudo={handleDudo}
+        onReset={handleResetGame}
+      />
+      {error && (
+        <div className="fixed bottom-4 left-4 right-4 p-4 bg-red-900 text-white rounded-lg shadow-lg">
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <strong>Erreur:</strong> {error}
+            </div>
+            <button
+              onClick={() => setError(null)}
+              className="ml-2 text-red-200 hover:text-white"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+    </ErrorBoundary>
   );
 }
