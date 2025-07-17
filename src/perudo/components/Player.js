@@ -8,7 +8,7 @@ const Player = ({ name, diceCount, bet, isCurrentTurn = false }) => {
       <div className="font-bold truncate">{name}</div>
       <div>Dés : {diceCount}</div>
       {isCurrentTurn && (
-        <div>Mise : {quantity > 0 ? `${quantity}x${face}` : '—'}</div>
+        <div>Enchère : {quantity > 0 ? `${quantity}×${face}` : '—'}</div>
       )}
     </div>
   );

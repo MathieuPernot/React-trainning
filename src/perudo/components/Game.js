@@ -2,74 +2,95 @@ import React, { useState, useEffect } from 'react';
 import Button from './Button';
 import {
   subscribeToGame,
-  joinRoom,
   startGame,
   placeBid,
   challengeBid,
   resetGame,
-  createRoom,
-  checkRoomExists,
-  disconnectPlayer
+  setPlayerReady,
+  cancelGame
 } from '../backend/gameService';
 import DiceContainer from './DiceContainer';
 import Dice from './Dice';
 import BidSelector from './BidSelector';
 
-// Composant pour le formulaire de connexion
-const LoginForm = ({ onSubmit, initialName }) => {
-  const [name, setName] = useState(initialName || '');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (name.trim()) onSubmit(name);
-  };
-
+// Composant pour la salle d'attente (lobby)
+const WaitingRoom = ({ players = [], isCreator, playerId, onStartGame, onCancel, onToggleReady }) => {
+  const currentPlayer = players.find(p => p.id === playerId);
+  const allPlayersReady = players.length >= 2 && players.every(p => p.isReady);
+  
+  console.log('🏠 [WaitingRoom] Rendering lobby with:', {
+    playersCount: players.length,
+    isCreator,
+    currentPlayerReady: currentPlayer?.isReady,
+    allPlayersReady
+  });
+  
   return (
-    <div className="flex flex-col items-center w-full max-w-xs">
-      <h2 className="text-xl mb-4">Entrez votre nom</h2>
-      <form onSubmit={handleSubmit} className="w-full">
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Votre nom"
-          className="w-full p-2 mb-4 text-white bg-gray-800 rounded"
-          minLength={2}
-          maxLength={20}
-          required
-          autoFocus
-        />
-        <Button 
-          type="submit"
-          className="w-full"
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 text-white bg-gray-900">
+      <h2 className="mb-4 text-2xl">🏠 Lobby Perudo</h2>
+      <div className="mb-6 p-4 bg-gray-800 rounded-lg">
+        <h3 className="mb-2 text-lg">Joueurs connectés ({players.length})</h3>
+        {Array.isArray(players) && players.map(player => (
+          <div key={player.id} className="mb-2 flex items-center gap-2">
+            {player.name} 
+            {player.isCreator && <span className="text-yellow-400">👑 Créateur</span>}
+            {player.isReady ? (
+              <span className="text-green-400">✓ Prêt</span>
+            ) : (
+              <span className="text-red-400">✗ Pas prêt</span>
+            )}
+          </div>
+        ))}
+      </div>
+      
+      <div className="flex flex-col gap-2">
+        {/* Bouton pour se marquer prêt/pas prêt */}
+        <Button
+          onClick={() => onToggleReady(!currentPlayer?.isReady)}
+          style={{ 
+            backgroundColor: currentPlayer?.isReady ? '#dc2626' : '#16a34a' 
+          }}
         >
-          Rejoindre
+          {currentPlayer?.isReady ? 'Pas prêt' : 'Prêt'}
         </Button>
-      </form>
+        
+        {/* Boutons pour le créateur */}
+        {isCreator && (
+          <>
+            <Button
+              onClick={onStartGame}
+              disabled={!allPlayersReady}
+              style={{ 
+                backgroundColor: allPlayersReady ? '#16a34a' : '#6b7280' 
+              }}
+            >
+              Démarrer la partie
+            </Button>
+            <Button
+              onClick={onCancel}
+              style={{ backgroundColor: '#dc2626' }}
+            >
+              Fermer le lobby
+            </Button>
+          </>
+        )}
+      </div>
+      
+      {players.length < 2 && (
+        <div className="mt-4 text-sm text-gray-400">
+          En attente d'autres joueurs... (min 2 joueurs)
+        </div>
+      )}
+      
+      {players.length >= 2 && !allPlayersReady && (
+        <div className="mt-4 text-sm text-gray-400">
+          En attente que tous les joueurs soient prêts...
+        </div>
+      )}
     </div>
   );
 };
-
-// Composant pour la salle d'attente
-const WaitingRoom = ({ players = [], isHost, onStartGame }) => (
-  <div className="flex flex-col items-center justify-center min-h-screen p-4 text-white bg-gray-900">
-    <h2 className="mb-4 text-xl">Salle d'attente</h2>
-    <div className="mb-4">
-      {Array.isArray(players) && players.map(player => (
-        <div key={player.id} className="mb-2">
-          {player.name} {player.isHost && '(Hôte)'}
-        </div>
-      ))}
-    </div>
-    {isHost && Array.isArray(players) && players.length >= 2 && (
-      <Button
-        onClick={onStartGame}
-      >
-        Démarrer la partie
-      </Button>
-    )}
-  </div>
-);
 
 // Fonction utilitaire pour valider une enchère (même logique que côté serveur)
 const isValidBid = (currentBid, lastBid) => {
@@ -119,7 +140,7 @@ const GameBoard = ({ gameState, playerId, onPlaceBid, onDudo, onReset }) => {
   }
 
   const currentPlayer = gameState.players.find(p => p.id === playerId);
-  const isCurrentTurn = gameState.currentTurn === playerId;
+  const isCurrentTurn = gameState.currentPlayer === playerId;
   const totalDice = gameState.players.reduce((sum, p) => sum + (p.diceCount || 0), 0);
 
   if (!currentPlayer) {
@@ -160,9 +181,17 @@ const GameBoard = ({ gameState, playerId, onPlaceBid, onDudo, onReset }) => {
         <div className="text-sm mb-2">
           Total des dés en jeu: {totalDice}
         </div>
-        {gameState.lastBid && (
+        {currentPlayer.diceCount === 1 && (
+          <div className="mb-4 p-2 rounded bg-yellow-800 text-yellow-200">
+            🎯 Mode Palifico activé ! Les Paco ne sont plus des jokers.
+          </div>
+        )}
+        {gameState.lastAction && gameState.lastAction.type === 'bid' && (
           <div className="mb-4 p-2 rounded">
-            Dernière enchère: {gameState.lastBid.diceCount} × {gameState.lastBid.diceValue}
+            Dernière enchère: {gameState.lastAction.count} × {gameState.lastAction.value}
+            {gameState.lastAction.isPalifico && (
+              <span className="text-yellow-400 ml-2">(Palifico)</span>
+            )}
           </div>
         )}
       </div>
@@ -175,7 +204,7 @@ const GameBoard = ({ gameState, playerId, onPlaceBid, onDudo, onReset }) => {
         <div className="flex flex-col items-center gap-4">
           <div className="flex gap-4">
             <Button onClick={() => setShowBidSelector(true)}>Enchérir</Button>
-            {gameState.lastBid && (
+            {gameState.lastAction && gameState.lastAction.type === 'bid' && (
               <Button onClick={() => {
                 setShowBidSelector(false);
                 onDudo();
@@ -184,8 +213,13 @@ const GameBoard = ({ gameState, playerId, onPlaceBid, onDudo, onReset }) => {
           </div>
           {showBidSelector && (
             <BidSelector
-              lastBid={gameState.lastBid}
+              lastBid={gameState.lastAction && gameState.lastAction.type === 'bid' ? {
+                diceValue: gameState.lastAction.value,
+                diceCount: gameState.lastAction.count,
+                isPalifico: gameState.lastAction.isPalifico
+              } : null}
               totalDice={totalDice}
+              isPalifico={currentPlayer.diceCount === 1}
               onValidate={(value, count) => {
                 onPlaceBid(value, count);
                 setShowBidSelector(false);
@@ -201,14 +235,14 @@ const GameBoard = ({ gameState, playerId, onPlaceBid, onDudo, onReset }) => {
         {gameState.players.map(player => (
           <div
             key={player.id}
-            className={gameState.currentTurn === player.id ? 'text-yellow-400' : ''}
+            className={gameState.currentPlayer === player.id ? 'text-yellow-400' : ''}
           >
             {player.name} ({player.diceCount || 0} dés)
           </div>
         ))}
       </div>
 
-      {gameState.status === 'finished' && gameState.hostId === playerId && (
+      {gameState.status === 'finished' && gameState.createdBy === playerId && (
         <Button
           onClick={onReset}
           className="mt-8"
@@ -220,34 +254,43 @@ const GameBoard = ({ gameState, playerId, onPlaceBid, onDudo, onReset }) => {
   );
 };
 
-export default function Game() {
-  const [gameState, setGameState] = useState(null);
-  const [playerId, setPlayerId] = useState(null);
-  const [playerName, setPlayerName] = useState(null);
+export default function Game({ gameData: initialGameData, playerId: propPlayerId, playerName: propPlayerName }) {
+  const [gameState, setGameState] = useState(initialGameData || null);
+  const [playerId, setPlayerId] = useState(propPlayerId || null);
+  const [playerName, setPlayerName] = useState(propPlayerName || null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isHost] = useState(() => localStorage.getItem('perudoIsHost') === 'true');
   const [gameEndMessage, setGameEndMessage] = useState('');
   const [timer, setTimer] = useState(null);
+  const [heartbeatInterval, setHeartbeatInterval] = useState(null);
   const TURN_TIMEOUT = 30000; // 30 secondes
+  const HEARTBEAT_INTERVAL = 30000; // 30 secondes
 
-  // Gérer la déconnexion quand le composant est démonté ou la fenêtre est fermée
+  // Nettoyer les intervals au démontage
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (playerId) {
-        disconnectPlayer(playerId);
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      if (playerId) {
-        disconnectPlayer(playerId);
+      // Nettoyer les intervals
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+      }
+      if (timer) {
+        clearTimeout(timer);
       }
     };
-  }, [playerId]);
+  }, [heartbeatInterval, timer]);
+
+  // Gérer le heartbeat pour maintenir la connexion
+  useEffect(() => {
+    if (playerId && !heartbeatInterval) {
+      const interval = setInterval(() => {
+        sendHeartbeat(playerId).catch(console.error);
+      }, HEARTBEAT_INTERVAL);
+      
+      setHeartbeatInterval(interval);
+      
+      return () => clearInterval(interval);
+    }
+  }, [playerId, heartbeatInterval, HEARTBEAT_INTERVAL]);
 
   // Effet pour gérer le timer du tour
   useEffect(() => {
@@ -262,7 +305,7 @@ export default function Game() {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
     
     // Si c'est le tour du joueur actuel, démarrer le timer
-    if (currentPlayer && currentPlayer.id === playerId) {
+    if (gameState.currentPlayer === playerId) {
       // Nettoyer l'ancien timer si il existe
       if (timer) {
         clearTimeout(timer);
@@ -272,7 +315,7 @@ export default function Game() {
       const newTimer = setTimeout(async () => {
         try {
           // Si c'est le premier tour, placer une enchère aléatoire
-          if (!gameState.lastBid) {
+          if (!gameState.lastAction || gameState.lastAction.type !== 'bid') {
             const randomValue = Math.floor(Math.random() * 6) + 1;
             await handlePlaceBid(randomValue, 1);
           } else {
@@ -294,31 +337,15 @@ export default function Game() {
   }, [gameState?.currentPlayerIndex, playerId, gameState?.status]);
 
   useEffect(() => {
-    // Récupérer l'ID et le nom du joueur du localStorage
-    const storedId = localStorage.getItem('perudoPlayerId');
-    const storedName = localStorage.getItem('perudoPlayerName');
-    if (storedId && storedName) {
-      setPlayerId(storedId);
-      setPlayerName(storedName);
-    }
-
     // S'abonner aux mises à jour du jeu
-    console.log('Subscribing to game updates...');
+    console.log('🎮 [Game] Setting up game subscription...');
     const unsubscribe = subscribeToGame((newGameState) => {
-      console.log('Game state updated:', newGameState);
+      console.log('🎮 [Game] Game state updated:', newGameState ? 'exists' : 'null');
       setGameState(newGameState);
-
-      // Si le joueur n'est plus dans la partie (déconnecté par un autre onglet par exemple)
-      if (newGameState && storedId && !newGameState.players.some(p => p.id === storedId)) {
-        setPlayerId(null);
-        setPlayerName(null);
-        localStorage.removeItem('perudoPlayerId');
-        localStorage.removeItem('perudoPlayerName');
-      }
     });
 
     return () => {
-      console.log('Unsubscribing from game updates...');
+      console.log('🎮 [Game] Cleaning up game subscription');
       unsubscribe();
     };
   }, []);
@@ -334,47 +361,37 @@ export default function Game() {
     }
   }, [gameState]);
 
-  const handleJoinGame = async (name) => {
+
+  const handleStartGame = async () => {
     try {
       setIsLoading(true);
-      setError(null);
-      
-      let newPlayerId = playerId;
-      if (!newPlayerId) {
-        newPlayerId = `player_${Date.now()}`;
-      }
-      
-      // Rejoindre la room
-      console.log('Joining room...');
-      await joinRoom({ 
-        id: newPlayerId, 
-        name,
-        isHost: isHost,
-        isConnected: true
-      });
-      
-      // Sauvegarder l'ID et le nom du joueur
-      localStorage.setItem('perudoPlayerId', newPlayerId);
-      localStorage.setItem('perudoPlayerName', name);
-      setPlayerId(newPlayerId);
-      setPlayerName(name);
-      
+      await startGame(playerId);
     } catch (error) {
-      console.error('Erreur lors de la connexion:', error);
-      setError(error.message || 'Erreur lors de la connexion. Veuillez réessayer.');
+      console.error('Erreur lors du démarrage:', error);
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleStartGame = async () => {
+  const handleCancelGame = async () => {
     try {
       setIsLoading(true);
-      await startGame();
+      await cancelGame(playerId);
     } catch (error) {
-      console.error('Erreur lors du démarrage:', error);
+      console.error('Erreur lors de l\'annulation:', error);
+      setError(error.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleToggleReady = async (isReady) => {
+    try {
+      await setPlayerReady(playerId, isReady);
+    } catch (error) {
+      console.error('Erreur lors du changement de statut:', error);
+      setError(error.message);
     }
   };
 
@@ -434,42 +451,38 @@ export default function Game() {
   };
 
   // Si pas de playerId, afficher le formulaire de connexion
+  // Si pas d'ID de joueur, c'est un problème de configuration
   if (!playerId) {
+    console.log('🎮 [Game] No playerId provided');
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4 text-white bg-gray-900">
-        <div className="w-full max-w-md">
-          <LoginForm onSubmit={handleJoinGame} initialName={playerName} />
-          {isLoading && (
-            <div className="mt-4 text-center">
-              <div className="animate-pulse">Connexion en cours...</div>
-            </div>
-          )}
-          {error && (
-            <div className="mt-4 text-center text-red-500">
-              {error}
-            </div>
-          )}
-        </div>
+        <div className="text-red-500">Erreur: Aucun ID de joueur fourni</div>
       </div>
     );
   }
 
   // Si pas de gameState, afficher le chargement
   if (!gameState) {
+    console.log('🎮 [Game] No gameState, showing loading');
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4 text-white bg-gray-900">
-        <div>Chargement de la partie...</div>
+        <div>Chargement du lobby...</div>
       </div>
     );
   }
 
-  // Si en attente, afficher la salle d'attente
+  // Si en attente, afficher la salle d'attente (lobby)
   if (gameState?.status === 'waiting') {
+    const isCreator = gameState.createdBy === playerId;
+    console.log('🎮 [Game] Showing lobby, isCreator:', isCreator);
     return (
       <WaitingRoom
         players={gameState.players || []}
-        isHost={isHost}
+        isCreator={isCreator}
+        playerId={playerId}
         onStartGame={handleStartGame}
+        onCancel={handleCancelGame}
+        onToggleReady={handleToggleReady}
       />
     );
   }

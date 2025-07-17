@@ -6,7 +6,11 @@
     "dev": "next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start --host 172.26.176.1",
-    "lint": "next lint"
+    "lint": "next lint",
+    "perudo:init": "node src/perudo/scripts/initFirestore.js init",
+    "perudo:clean": "node src/perudo/scripts/initFirestore.js clean",
+    "perudo:test": "node src/perudo/scripts/initFirestore.js test",
+    "perudo:reset": "node src/perudo/scripts/initFirestore.js reset"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
