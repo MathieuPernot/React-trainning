@@ -16,26 +16,6 @@ const Home = () => {
         const savedName = getSavedPlayerName();
         if (savedName) {
             setPlayerName(savedName);
-            // Auto-connexion si un nom est sauvegardé
-            const autoConnect = async () => {
-                try {
-                    setIsLoading(true);
-                    const generatedPlayerId = generatePlayerId(savedName);
-                    setPlayerId(generatedPlayerId);
-                    const gameData = await joinOrCreateLobby({
-                        id: generatedPlayerId,
-                        name: savedName
-                    });
-                    console.log('🏠 [Home] Auto-connect successful, gameData:', gameData ? 'exists' : 'null');
-                } catch (error) {
-                    console.log('🏠 [Home] Auto-connection failed:', error.message);
-                    // Ne pas afficher l'erreur, l'utilisateur peut toujours se connecter manuellement
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-            
-            autoConnect();
         }
 
         console.log('🏠 [Home] Setting up game listener');
