@@ -159,11 +159,17 @@ const GameContent = () => {
 // Composant racine avec les providers
 const NewHome = () => {
   return (
-    <PlayerProvider>
-      <GameProvider>
-        <GameContent />
-      </GameProvider>
-    </PlayerProvider>
+    <div className="relative">
+      {/* Version indicator */}
+      <div className="absolute top-4 right-4 text-gray-400 text-sm z-50">
+        Version 1.0
+      </div>
+      <PlayerProvider>
+        <GameProvider>
+          <GameContent />
+        </GameProvider>
+      </PlayerProvider>
+    </div>
   );
 };
 

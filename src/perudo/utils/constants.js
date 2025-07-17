@@ -27,7 +27,7 @@ export const ACTION_TYPES = {
 
 export const FIREBASE_CONFIG = {
   GAME_COLLECTION: 'games',
-  ROOM_ID: 'perudo-room'
+  ROOM_ID: 'game_default'
 };
 
 export const STORAGE_KEYS = {
