@@ -80,6 +80,8 @@ const IndicePage = () => {
                 </>
             ) : (
                 <div className="flex flex-col items-center justify-center min-h-screen bg-yellow-900 text-white p-6">
+                                        <audio ref={audioRef} src="/fortboyard.mp3" preload="auto" autoPlay loop />
+
                     <h1 className="text-5xl font-extrabold mb-8 drop-shadow-[2px_2px_4px_rgba(0,0,0,0.9)] select-none" style={{ fontFamily: "'Impact', sans-serif" }}>
                         🔥 Indice 🔥
                     </h1>
