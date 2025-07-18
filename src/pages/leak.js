@@ -68,7 +68,7 @@ const BombTimer = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6 text-white bg-black">
+    <div className="flex flex-col items-center justify-center min-h-screen text-white bg-black overflow-y-auto">
       {!finished ? (
         <div>
           <h1 className="text-red-500 select-none mb-12 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
@@ -78,7 +78,7 @@ const BombTimer = () => {
           <audio ref={audioRef} src="/theme.mp3" preload="auto" autoPlay loop />
         </div>
       ) : (
-        <div className="countdown-finished">
+        <div className="countdown-finished ">
           <WordLock />
         </div>
       )}

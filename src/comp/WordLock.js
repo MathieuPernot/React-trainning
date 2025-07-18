@@ -112,7 +112,7 @@ const WordLock = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-amber-900 to-orange-900 min-h-screen flex items-center justify-center p-3 sm:p-4 font-serif">
+  <div className="bg-gradient-to-br from-amber-900 to-orange-900 min-h-screen flex items-start justify-center p-3 sm:p-4 font-serif">
       <audio ref={audioRef} src="/fortboyard.mp3" preload="auto" loop />
 
       {/* Animation de succès */}
@@ -129,7 +129,7 @@ const WordLock = () => {
       )}
 
       {/* Contenu principal */}
-      <div className="w-full max-w-2xl mx-auto my-auto overflow-auto">
+      <div className="w-full max-w-2xl mx-auto my-auto">
         <div className="bg-gradient-to-br from-[#2d1b10]/90 to-[#1a120b]/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-2xl border-4 border-yellow-700/50 relative">
           {/* Effet de brillance */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-500/5 to-transparent animate-pulse"></div>
@@ -222,6 +222,15 @@ const WordLock = () => {
                 >
                   {validatedWords[index] ? 'Validé ✓' : 'Valider'}
                 </button>
+                 <a
+    href={`/indice/${index + 1}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex items-center justify-center px-4 sm:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg border-2 border-yellow-500 text-yellow-300 hover:text-yellow-100 hover:border-yellow-300 transition-all duration-300 bg-[#1a120b]/70 hover:bg-[#1a120b]/90 shadow-lg"
+    aria-label={`Voir l'indice du mot ${index + 1}`}
+  >
+    Indice
+  </a>
               </div>
             ))}
           </div>
