@@ -23,6 +23,8 @@ import One from './indice/1';
 import Two from './indice/2';
 import Three from './indice/3';
 import Four from './indice/4';
+import Five from './indice/5';
+
 
 function MyApp() {
   const [isClient, setIsClient] = useState(false);
@@ -50,7 +52,7 @@ function MyApp() {
           <Route path="/indice/2" element={<Two />} />
           <Route path="/indice/3" element={<Three />} />
           <Route path="/indice/4" element={<Four />} />
-
+                    <Route path="/indice/5" element={<Five />} />
         </Routes>
       </Router>
       <Analytics />

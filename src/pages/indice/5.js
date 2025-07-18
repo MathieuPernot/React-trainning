@@ -24,7 +24,7 @@ const DigitalTime = ({ timeStr }) => (
 
 const IndicePage = () => {
 
-    const fixedEndDate = new Date("2025-07-24T21:00:00Z");
+    const fixedEndDate = new Date("2025-07-30T21:00:00Z");
 
     const [timeLeft, setTimeLeft] = useState(null);
     const [finished, setFinished] = useState(false);
@@ -80,41 +80,22 @@ const IndicePage = () => {
                 </>
             ) : (
                 <div className="flex flex-col items-center justify-center min-h-screen bg-yellow-900 text-white p-6">
-                                        <audio ref={audioRef} src="/fortboyard.mp3" preload="auto" autoPlay loop />
-
                     <h1 className="text-5xl font-extrabold mb-8 drop-shadow-[2px_2px_4px_rgba(0,0,0,0.9)] select-none" style={{ fontFamily: "'Impact', sans-serif" }}>
                         🔥 Indice 🔥
                     </h1>
                     <div className="bg-yellow-800 border-8 border-yellow-600 rounded-xl p-6 max-w-md w-full shadow-lg">
-                        <h2 className="text-3xl font-bold mb-4 text-center drop-shadow-md">
-                            Devinette du jour
-                        </h2>
-                        <p className="text-lg text-yellow-200 mb-6 text-center leading-relaxed">
-                            Là-haut, exposé au vent et au ciel,<br />
-                            Se cache un secret, pas bien officiel.<br />
-                            Entre les dalles, ou sous un banc,<br />
-                            Un indice attend… discret mais franc.<br />
-                            Le lieu semble vide, presque banal,<br />
-                            Mais chaque recoin peut devenir fatal.<br />
-                            Cherche sans bruit, regarde sans voir,<br />
-                            Car sur cette terrasse, tout est à croire…<br />
-                            Ce que tu cherches n’a pas de voix,<br />
-                            Mais si tu le trouves, il parlera pour toi.<br />
-                        </p>
-                        {/* Emplacements pour images (exemple) */}
+                        <div className="w-full max-w-md aspect-video">
+                            <iframe
+                                className="w-full h-full rounded-lg"
+                                src="https://www.youtube.com/embed/dQw4w9WgXcQ" // Remplace par le lien de ta vidéo
+                                title="YouTube video"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            ></iframe>
+                        </div>
+
                     </div>
-                    <a
-                        href="https://yt3.ggpht.com/-_opHDPFLLl4/AAAAAAAAAAI/AAAAAAAAAAA/GU0OrN9XbZk/s900-c-k-no-mo-rj-c0xffffff/photo.jpg"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full h-auto block rounded-md border-4 border-yellow-500 overflow-hidden focus:outline-none"
-                    >
-                        <img
-                            src="https://yt3.ggpht.com/-_opHDPFLLl4/AAAAAAAAAAI/AAAAAAAAAAA/GU0OrN9XbZk/s900-c-k-no-mo-rj-c0xffffff/photo.jpg"
-                            alt="Description de l'image"
-                            className="w-full h-full object-cover"
-                        />
-                    </a>
 
                 </div>
 
