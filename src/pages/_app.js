@@ -19,7 +19,10 @@ import Gaben from './gaben';
 import Samule from './samule';
 import Perudo from '../perudo/NewHome';
 import Leak from './leak';
-
+import One from './indice/1';
+import Two from './indice/2';
+import Three from './indice/3';
+import Four from './indice/4';
 
 function MyApp() {
   const [isClient, setIsClient] = useState(false);
@@ -43,6 +46,11 @@ function MyApp() {
           <Route path="/samule" element={<Samule />} />
           <Route path="/perudo" element={<Perudo />} />
           <Route path="/leak" element={<Leak />} />
+          <Route path="/indice/1" element={<One />} />
+          <Route path="/indice/2" element={<Two />} />
+          <Route path="/indice/3" element={<Three />} />
+          <Route path="/indice/4" element={<Four />} />
+
         </Routes>
       </Router>
       <Analytics />

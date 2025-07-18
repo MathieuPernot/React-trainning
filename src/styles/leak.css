@@ -1,32 +1,5 @@
-/* Countdown.css */
 
-.countdown-container {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  margin-top: 100px;
-  background-color: #f0f0f0;
-  min-height: 100vh;
-  padding-top: 20px;
-}
-
-.countdown-title {
-  color: #333;
-  font-size: 2em;
-  margin-bottom: 20px;
-}
-
-.countdown-box {
-  font-size: 2em;
-  background-color: #fff;
-  color: #444;
-  padding: 20px;
-  display: inline-block;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.countdown-finished {
-  font-size: 2em;
-  color: #222;
-  margin-top: 20px;
+html, body, #root {
+  height: 100%;
+  overflow-y: auto;
 }
