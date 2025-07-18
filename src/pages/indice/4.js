@@ -24,7 +24,7 @@ const DigitalTime = ({ timeStr }) => (
 
 const IndicePage = () => {
 
-    const fixedEndDate = new Date("2025-07-27T21:00:00Z");
+    const fixedEndDate = new Date("2025-07-27T19:00:00Z");
 
     const [timeLeft, setTimeLeft] = useState(null);
     const [finished, setFinished] = useState(false);
