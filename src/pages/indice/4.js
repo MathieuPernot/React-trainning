@@ -88,7 +88,7 @@ const IndicePage = () => {
                             Devinette du jour
                         </h2>
                         <p className="text-lg text-yellow-200 mb-6 text-center leading-relaxed">
-                            À la cafet', deux fois la semaine,<br />
+                            À la cafet, deux fois la semaine,<br />
                             Un homme veille, discret, sans peine.<br />
                             Concierge de nom, gardien de passage,<br />
                             Il détient un test, pour les plus sages.<br />

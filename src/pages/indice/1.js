@@ -23,8 +23,6 @@ const DigitalTime = ({ timeStr }) => (
 
 
 const IndicePage = () => {
-    // Fixe l'indice à 1
-    const id = "1";
 
     const fixedEndDate = new Date("2025-07-18T21:00:00Z");
 
